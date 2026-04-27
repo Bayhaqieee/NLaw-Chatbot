@@ -1,0 +1,13 @@
+use_default_settings: true
+server:
+  secret_key: "nusantaralaw_secure_secret"
+search:
+  safe_search: 0
+  default_lang: "id"
+engines:
+  - name: google
+    engine: google
+    language: id
+  - name: hukumonline
+    engine: xpath
+    url: https://www.hukumonline.com/search/?q={query}

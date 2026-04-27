@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NusantaraLaw Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar for Uploads -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>NusantaraLaw</h2>
+                <span class="badge">v1.0.0</span>
+            </div>
+            
+            <div class="upload-section">
+                <h3>Knowledge Base</h3>
+                <p>Upload dokumen hukum (PDF)</p>
+                <form id="uploadForm">
+                    <input type="file" id="pdfFile" accept="application/pdf" required />
+                    <button type="submit" id="uploadBtn" class="btn primary">Ingest Document</button>
+                </form>
+                <div id="uploadStatus" class="status-msg"></div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Pengaturan</h3>
+                <label class="toggle">
+                    <input type="checkbox" id="webSearchToggle">
+                    <span class="slider round"></span>
+                    <span class="toggle-label">Gunakan Web Search (SearXNG)</span>
+                </label>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area">
+            <header class="chat-header">
+                <h2>Asisten Hukum AI</h2>
+                <p>Ditenagai oleh Qwen 3.5 & Milvus RAG</p>
+            </header>
+            
+            <div id="chatHistory" class="chat-history">
+                <div class="message system-message">
+                    <div class="avatar">🏛️</div>
+                    <div class="content">Halo! Saya NusantaraLaw Chatbot. Silakan tanyakan seputar hukum Indonesia.</div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <form id="chatForm">
+                    <input type="text" id="questionInput" placeholder="Tuliskan pertanyaan hukum Anda di sini..." required autocomplete="off" />
+                    <button type="submit" id="sendBtn" class="btn primary">Kirim</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

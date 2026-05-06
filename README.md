@@ -1,103 +1,236 @@
 # NusantaraLaw Chatbot
 
-A self-hosted legal AI chatbot that answers Indonesian law questions without hallucination, built specifically for integration into BAB IV of the software development thesis.
+A self-hosted Indonesian legal AI chatbot that answers law questions with minimal hallucination. Combines a QLoRA fine-tuned LLM (`qwen3.5-9b-nlaw`) with Retrieval-Augmented Generation (RAG) over verified Indonesian law documents, evaluated against an 8-metric benchmark.
+
+> Built for BAB IV (Pengembangan Perangkat Lunak) of the undergraduate thesis on Indonesian Legal AI.
+
+---
 
 ## Architecture & Tech Stack
 
-- **Frontend**: HTML + Vanilla JS + CSS (Lightweight, responsive)
-- **Backend API**: FastAPI (Python 3.11)
-- **Vector Database**: Milvus v2.4 (Docker)
-- **Embedding Model**: `paraphrase-multilingual-mpnet-base-v2`
-- **LLM Inference**: HuggingFace Inference API (`bayhaqieee/qwen3.5-9b-nlaw-gguf`)
-- **Web Search**: SearXNG (Docker, self-hosted)
-- **Prompt Format**: TOON (Token-Oriented Object Notation)
+| Component         | Technology                                      |
+|-------------------|------------------------------------------------|
+| **Frontend**      | HTML5 + Vanilla JS + CSS3 (dark glassmorphism) |
+| **Backend API**   | FastAPI 0.111 + Uvicorn (Python 3.11)          |
+| **Vector DB**     | Milvus v2.4 (Docker)                           |
+| **Embedding**     | `qwen3-embedding:8b` via Ollama (4096-dim)     |
+| **LLM Inference** | Ollama local — `qwen3.5:9b` + `qwen3.5-9b-nlaw` |
+| **Web Search**    | SearXNG (self-hosted Docker)                   |
+| **NLI Model**     | `nli-deberta-v3-base` (local weights)          |
+| **BERTScore**     | `roberta-large` (local weights)                |
+| **Sentence Sim**  | `paraphrase-multilingual:278m-mpnet-base-v2`   |
+
+For full system documentation, architecture diagrams, hyperparameters, and design decisions see [`idea.md`](./idea.md).
+
+---
+
+## Prerequisites
+
+- **Docker + Docker Compose** installed
+- **Ollama** installed locally with these models pulled:
+  ```bash
+  ollama pull qwen3.5:9b
+  ollama pull qwen3.5-9b-nlaw        # your fine-tuned model
+  ollama pull qwen3-embedding:8b
+  ollama pull paraphrase-multilingual:278m-mpnet-base-v2-fp16
+  ```
+- **Python 3.11** (for running ingestion scripts locally)
 
 ---
 
 ## Step-by-Step Execution Guide
 
-### Prerequisites
-- Docker and Docker Compose installed
-- Python 3.11 installed locally (for testing ingestion)
-- HuggingFace API Token (currently left empty in `.env` for privacy, but will be needed to query the LLM)
+### Step 1: Clone & Configure
 
-### Step 1: Infrastructure Setup
-1. Open terminal and navigate to the project root `NusantaraLaw-Chatbot`.
-2. Ensure you have the required environment variables in the `.env` file. You can leave `HF_API_TOKEN` empty for now, but you **must** add a valid token before asking the chatbot questions.
-3. Start the Docker containers:
-   ```bash
-   docker-compose up -d --build
-   ```
-4. This command will start:
-   - Frontend (`localhost:3000`)
-   - Backend API (`localhost:8000`)
-   - Milvus Vector DB (`localhost:19530`) & health interface (`localhost:9091`)
-   - SearXNG (`localhost:8080`)
+```bash
+git clone <repo-url>
+cd NusantaraLaw-Chatbot
+```
 
-### Step 2: Document Ingestion (Local Setup for Ingestion Scripts)
-By default, the database is empty. You need to ingest your Indonesian legal PDF documents into Milvus.
+Verify `.env` contains:
+```env
+OLLAMA_HOST=http://host.docker.internal:11434
+MILVUS_HOST=milvus-standalone
+MILVUS_PORT=19530
+COLLECTION_NAME=nusantara_law
+SEARXNG_URL=http://searxng:8080
+```
 
-1. Place your legal PDF files inside the `UU-PDP/` folder.
-2. Open a **new terminal** at the project root and create a Python virtual environment:
-   ```bash
-   python -m venv .venv
-   ```
-3. Activate the virtual environment:
-   ```bash
-   # Windows PowerShell
-   .\.venv\Scripts\Activate.ps1
-   # Windows CMD
-   .\.venv\Scripts\activate.bat
-   ```
-4. Install the ingestion script dependencies:
-   ```bash
-   pip install -r milvus/requirements.txt
-   ```
-5. Make sure Docker containers are already running (`docker-compose up -d`), then initialize the Milvus collection schema:
-   ```bash
-   python milvus/init_collection.py
-   ```
-6. Run the embedding script to chunk and embed all PDFs from the `UU-PDP/` folder into Milvus:
-   ```bash
-   python milvus/embed_documents.py
-   ```
-   *(Alternatively, skip steps 5 & 6 and use the **Ingest Document** button on the web UI instead!)*
+### Step 2: Download Local Model Weights
 
-### Step 3: API Verification
-Before using the frontend, ensure the APIs are healthy:
-- Check Backend: `curl http://localhost:8000/api/health`
-- Check SearXNG: `curl http://localhost:8080`
-- Check Milvus: `curl http://localhost:9091/healthz`
+Run this **before** building Docker to pre-download NLI + RoBERTa weights into `./Model/`:
 
-### Step 4: Interact with the Chatbot
-1. Open your browser and navigate to `http://localhost:3000`.
-2. **Uploading**: On the left sidebar, select a PDF document (like UU 27/2022) and click "Ingest Document". Wait for the success message.
-3. **Chatting**: Ask a legal question in the main chat area (e.g., *"Apa definisi data pribadi menurut UU PDP?"*).
-4. **Web Search**: Toggle "Gunakan Web Search" if you want the chatbot to cross-reference *hukumonline.com* for the latest articles.
+```bash
+python download_nli.py
+```
+
+This places `nli-deberta-v3-base` and `roberta-large` into `./Model/`, which are bind-mounted into the container at `/app/Model/`.
+
+### Step 3: Start All Services
+
+```bash
+docker-compose up -d --build
+```
+
+This starts:
+| Service             | URL                        |
+|---------------------|----------------------------|
+| Frontend (nginx)    | `http://localhost:3000`    |
+| Backend (FastAPI)   | `http://localhost:8000`    |
+| Milvus              | `localhost:19530`          |
+| Milvus health       | `http://localhost:9091/healthz` |
+| SearXNG             | `http://localhost:8080`    |
+
+### Step 4: Ingest Law Documents
+
+Place your Indonesian law PDFs in `UU-PDP/`, then:
+
+```bash
+# Create Python virtual environment (first time only)
+python -m venv .venv
+
+# Activate
+.\.venv\Scripts\Activate.ps1          # Windows PowerShell
+# source .venv/bin/activate           # macOS/Linux
+
+# Install ingestion dependencies
+pip install -r milvus/requirements.txt
+
+# Initialize Milvus collection (4096-dim IVF_FLAT index)
+python milvus/init_collection.py
+
+# Embed all PDFs in UU-PDP/ into Milvus
+python milvus/embed_documents.py
+```
+
+### Step 5: Verify Health
+
+```bash
+curl http://localhost:8000/api/health
+# Expected: {"status":"ok","milvus":"ok","ollama":"ok","searxng":"ok"}
+```
+
+### Step 6: Use the Application
+
+1. Open `http://localhost:3000`
+2. **Chat**: Ask a legal question (e.g., *"Apa kewajiban pengendali data menurut UU 27/2022?"*)
+3. **Web Search**: Toggle "Gunakan Web Search" for real-time augmentation
+4. **Upload**: Upload additional law PDFs via the left sidebar
+5. **Evaluate**: Click "Evaluasi" in the navbar to open the evaluation dashboard
 
 ---
 
-## Verification Plan
+## Evaluation Dashboard
 
-*(As requested, this plan helps to test and validate the entire integration)*
+Located at `http://localhost:3000/evaluation.html`.
 
-### Automated Testing
-- [ ] Run `docker-compose ps` to ensure all containers (`frontend`, `backend`, `milvus-standalone`, `etcd`, `minio`, `searxng`) are running.
-- [ ] Run health check: `curl http://localhost:8000/api/health` -> Expect `{"status": "ok"}`
+### How it works:
+1. Select test cases from the left sidebar (or "Pilih Semua")
+2. Click "Mulai Evaluasi"
+3. Both `qwen3.5:9b` (Vanilla) and `qwen3.5-9b-nlaw` (Fine-Tuned) generate answers using live Milvus RAG context
+4. Results are evaluated across **8 metrics** in 3 layers:
 
-### Manual End-to-End Verification
-1. **Document Ingestion Test**:
-   - Navigate to `localhost:3000`.
-   - Upload a test PDF file using the left sidebar.
-   - Verify that the status turns green indicating chunks were successfully embedded.
-2. **RAG Flow Test (Local Vector Search)**:
-   - Ask a question derived from the uploaded PDF.
-   - Verify the chatbot answers correctly, citing the source document and page number.
-   - Verify the system notes that TOON format saved tokens.
-3. **SearXNG Web Fallback Test**:
-   - Turn ON the "Gunakan Web Search" toggle.
-   - Ask about a very recent legal development (e.g., "Berita terbaru revisi UU ITE 2024").
-   - Verify the chatbot response includes URLs from `hukumonline.com` or `jdih.go.id` in the source citations.
-4. **Error Handling Test**:
-   - Disconnect internet or provide an invalid HF Token.
-   - Verify the UI gracefully catches the error and displays a clear message to the user.
+| Layer        | Metrics                                         |
+|--------------|--------------------------------------------------|
+| Semantic     | SacreBLEU, ROUGE-L, METEOR                      |
+| Sequential   | BERTScore (F1), Sentence Similarity, NLI Entailment |
+| Latent Space | NLaw Score (Cosine), L2 Distance                |
+
+### Output:
+- **Ringkasan Evaluasi**: Side-by-side average scores for all metrics, winner highlighted in gold
+- **Kompilasi Latent Space**: Global PCA + t-SNE chart of ALL embeddings projected in one shared space
+- **Per-Question Cards**: Individual metric scores + per-question latent space scatter plot (Vanilla ○, Fine-Tuned △, Ground Truth □)
+- **Timing**: Per-question generation time + total evaluation duration
+
+---
+
+## Maintenance
+
+### Check logs
+```powershell
+.\check_logs.ps1
+```
+Or via API: `http://localhost:8000/api/logs`
+
+### Rebuild after code changes
+```bash
+docker-compose up -d --build backend    # backend only
+docker-compose up -d --build frontend   # frontend only
+docker-compose up -d --build            # everything
+```
+
+### Clear vector database (start fresh)
+```bash
+python milvus/init_collection.py   # drops + recreates collection
+```
+
+### Free up Docker storage
+```bash
+docker system prune -f              # remove dangling images/containers
+docker system prune -a --volumes -f # WARNING: also removes volumes
+```
+
+---
+
+## Project Structure
+
+```
+NusantaraLaw-Chatbot/
+├── docker-compose.yml
+├── .env
+├── idea.md                      ← Full technical documentation
+├── README.md                    ← This file
+├── download_nli.py              ← Pre-downloads model weights
+├── check_logs.ps1               ← Log monitoring utility
+├── backend/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── routes/
+│   │   ├── chat.py
+│   │   ├── upload.py
+│   │   ├── evaluation.py        ← /api/evaluate with RAG + 8-metric eval
+│   │   ├── documents.py
+│   │   └── health.py
+│   └── services/
+│       ├── ollama_client.py     ← LLM generation + embeddings via Ollama
+│       ├── milvus_client.py     ← Vector search + CRUD
+│       ├── searxng_client.py    ← Web search augmentation
+│       ├── rag_pipeline.py      ← RAG orchestration
+│       ├── evaluator.py         ← 8-metric evaluation (singleton models)
+│       └── pdf_parser.py        ← PyMuPDF chunking
+├── frontend/
+│   ├── Dockerfile
+│   ├── index.html               ← Chat UI
+│   ├── style.css
+│   ├── app.js
+│   ├── evaluation.html          ← Evaluation dashboard
+│   └── evaluation.js            ← Charts + summary + global latent viz
+├── milvus/
+│   ├── init_collection.py
+│   └── embed_documents.py
+├── Model/
+│   ├── nli-deberta-v3-base/     ← Local NLI weights
+│   └── roberta-large/           ← Local BERTScore weights
+├── UU-PDP/                      ← Law document PDFs
+└── Test-Set/
+    └── data-test.json           ← Golden evaluation test cases
+```
+
+---
+
+## Validated Evaluation Results
+
+Fine-Tuned model (`qwen3.5-9b-nlaw`) vs Vanilla (`qwen3.5:9b`):
+
+| Metric          | Vanilla | Fine-Tuned | Winner         |
+|-----------------|---------|------------|----------------|
+| SacreBLEU       | 5.27    | **7.31**   | ✅ Fine-Tuned   |
+| ROUGE-L         | 0.155   | **0.178**  | ✅ Fine-Tuned   |
+| METEOR          | 0.286   | **0.300**  | ✅ Fine-Tuned   |
+| BERTScore (F1)  | **0.970**| 0.969     | Vanilla        |
+| Sentence Sim    | 0.546   | **0.753**  | ✅ Fine-Tuned   |
+| NLI Entailment  | -0.082  | **+2.765** | ✅ Fine-Tuned   |
+| NLaw Score      | 0.665   | **0.736**  | ✅ Fine-Tuned   |
+| L2 Distance     | 0.817   | **0.707**  | ✅ Fine-Tuned   |
+| **Overall**     |         | **7/8**    | **Fine-Tuned** |

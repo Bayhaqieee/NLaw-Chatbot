@@ -1,6 +1,6 @@
 import os
 from pymilvus import MilvusClient
-from sentence_transformers import SentenceTransformer
+from services.ollama_client import get_embeddings_local
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,15 +8,9 @@ load_dotenv()
 MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
 MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "nusantara_law")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "qwen3-embedding:8b")
 
-_model = None
 _client = None
-
-def get_embedding_model():
-    global _model
-    if _model is None:
-        _model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
-    return _model
 
 def get_client() -> MilvusClient:
     global _client
@@ -27,8 +21,7 @@ def get_client() -> MilvusClient:
 
 def search_milvus(query: str, top_k: int = 5) -> tuple[list[dict], float]:
     client = get_client()
-    model = get_embedding_model()
-    query_vector = model.encode(query).tolist()
+    query_vector = get_embeddings_local(query, model=EMBEDDING_MODEL)
 
     results = client.search(
         collection_name=COLLECTION_NAME,

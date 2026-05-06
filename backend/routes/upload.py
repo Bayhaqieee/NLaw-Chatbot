@@ -1,7 +1,8 @@
 from fastapi import APIRouter, UploadFile, File
 from models.schemas import UploadResponse
 from services.pdf_parser import extract_text_from_pdf, chunk_text
-from services.milvus_client import get_embedding_model, insert_chunks, COLLECTION_NAME
+from services.milvus_client import insert_chunks, COLLECTION_NAME, EMBEDDING_MODEL
+from services.ollama_client import get_embeddings_local
 from datetime import datetime
 
 router = APIRouter()
@@ -13,14 +14,13 @@ async def upload_document(file: UploadFile = File(...)):
 
     contents = await file.read()
     pages_data = extract_text_from_pdf(contents)
-    model = get_embedding_model()
 
     batch = []
     for page_data in pages_data:
         for chunk in chunk_text(page_data["text"]):
             if len(chunk) < 10:
                 continue
-            embedding = model.encode(chunk).tolist()
+            embedding = get_embeddings_local(chunk, model=EMBEDDING_MODEL)
             batch.append({
                 "doc_name":    file.filename,
                 "category":    "USER_UPLOAD",

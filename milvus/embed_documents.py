@@ -1,6 +1,6 @@
 import os
 import fitz
-from sentence_transformers import SentenceTransformer
+import requests
 from pymilvus import MilvusClient
 from datetime import datetime
 from dotenv import load_dotenv
@@ -10,6 +10,8 @@ load_dotenv()
 MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
 MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "nusantara_law")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "qwen3-embedding:8b")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "UU-PDP")
 
 def chunk_text(text, chunk_size=500, overlap=50):
@@ -30,13 +32,19 @@ def extract_text_from_pdf(filepath):
             pages_data.append({"page_no": page_num + 1, "text": text})
     return pages_data
 
+def get_embedding(text: str) -> list[float]:
+    url = f"{OLLAMA_HOST}/api/embeddings"
+    payload = {"model": EMBEDDING_MODEL, "prompt": text}
+    response = requests.post(url, json=payload)
+    response.raise_for_status()
+    return response.json().get("embedding", [])
+
 def embed_and_insert():
     uri = f"http://{MILVUS_HOST}:{MILVUS_PORT}"
     print(f"Connecting to Milvus at {uri}...")
     client = MilvusClient(uri=uri)
 
-    print("Loading embedding model (paraphrase-multilingual-mpnet-base-v2)...")
-    model = SentenceTransformer("paraphrase-multilingual-mpnet-base-v2")
+    print(f"Using Ollama embedding model ({EMBEDDING_MODEL})...")
 
     if not os.path.exists(DOCS_DIR):
         print(f"Directory {DOCS_DIR} not found. Place PDFs in UU-PDP/ folder.")
@@ -57,7 +65,7 @@ def embed_and_insert():
             for chunk in chunk_text(page_data["text"]):
                 if len(chunk) < 10:
                     continue
-                embedding = model.encode(chunk).tolist()
+                embedding = get_embedding(chunk)
                 batch.append({
                     "doc_name":    filename,
                     "category":    "UU_PDP",

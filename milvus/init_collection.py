@@ -23,7 +23,7 @@ def create_collection():
     schema.add_field("category",   DataType.VARCHAR,      max_length=64)
     schema.add_field("chunk_text", DataType.VARCHAR,      max_length=4096)
     schema.add_field("page_no",    DataType.INT32)
-    schema.add_field("embedding",  DataType.FLOAT_VECTOR, dim=768)
+    schema.add_field("embedding",  DataType.FLOAT_VECTOR, dim=4096)
     schema.add_field("upload_by",  DataType.VARCHAR,      max_length=64)
     schema.add_field("uploaded_at",DataType.VARCHAR,      max_length=32)
 

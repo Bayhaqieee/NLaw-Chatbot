@@ -5,6 +5,7 @@ class ChatRequest(BaseModel):
     question: str
     use_web_search: bool = False
     session_id: Optional[str] = None
+    model: Optional[str] = "qwen3.5-9b-nlaw"  # vanilla: qwen3.5:9b, finetuned: qwen3.5-9b-nlaw
 
 class SourceCitation(BaseModel):
     pasal: str

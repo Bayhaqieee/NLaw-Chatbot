@@ -3,61 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NusantaraLaw Chatbot</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="description" content="NusantaraLaw - Asisten Hukum AI berbasis RAG untuk hukum Indonesia">
+    <title>NusantaraLaw | Asisten Hukum AI</title>
+    <link rel="stylesheet" href="style.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Lora:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar for Uploads -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>NusantaraLaw</h2>
-                <span class="badge">v1.0.0</span>
-            </div>
-            
-            <div class="upload-section">
-                <h3>Knowledge Base</h3>
-                <p>Upload dokumen hukum (PDF)</p>
-                <form id="uploadForm">
-                    <input type="file" id="pdfFile" accept="application/pdf" required />
-                    <button type="submit" id="uploadBtn" class="btn primary">Ingest Document</button>
-                </form>
-                <div id="uploadStatus" class="status-msg"></div>
-            </div>
+<div class="app-container">
 
-            <div class="settings-section">
-                <h3>Pengaturan</h3>
-                <label class="toggle">
-                    <input type="checkbox" id="webSearchToggle">
-                    <span class="slider round"></span>
-                    <span class="toggle-label">Gunakan Web Search (SearXNG)</span>
-                </label>
-            </div>
-        </aside>
+    <!-- ══ Sidebar ══════════════════════════════ -->
+    <aside class="sidebar">
 
-        <!-- Main Chat Area -->
-        <main class="chat-area">
-            <header class="chat-header">
-                <h2>Asisten Hukum AI</h2>
-                <p>Ditenagai oleh Qwen 3.5 & Milvus RAG</p>
-            </header>
-            
-            <div id="chatHistory" class="chat-history">
-                <div class="message system-message">
-                    <div class="avatar">🏛️</div>
-                    <div class="content">Halo! Saya NusantaraLaw Chatbot. Silakan tanyakan seputar hukum Indonesia.</div>
+        <div class="sidebar-brand">
+            <div class="brand-row">
+                <div class="brand-icon">NL</div>
+                <div>
+                    <div class="brand-name">NusantaraLaw</div>
+                    <div class="brand-tag">Legal AI Assistant</div>
                 </div>
             </div>
+            <span class="badge">v1.0.0 &middot; RAG</span>
+        </div>
 
-            <div class="input-area">
-                <form id="chatForm">
-                    <input type="text" id="questionInput" placeholder="Tuliskan pertanyaan hukum Anda di sini..." required autocomplete="off" />
-                    <button type="submit" id="sendBtn" class="btn primary">Kirim</button>
-                </form>
+        <!-- Knowledge Base -->
+        <div class="sidebar-section">
+            <div class="section-label">Knowledge Base</div>
+            <form id="uploadForm">
+                <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
+                    <label class="upload-label">
+                        <input type="file" id="pdfFile" accept="application/pdf" required />
+                        <strong>Unggah Dokumen PDF</strong>
+                        Klik untuk memilih file
+                    </label>
+                    <div id="fileName">Belum ada file dipilih</div>
+                </div>
+                <button type="submit" id="uploadBtn" class="btn primary">Proses Dokumen</button>
+            </form>
+            <div id="uploadStatus" class="status-msg"></div>
+        </div>
+
+        <!-- Settings -->
+        <div class="sidebar-section">
+            <div class="section-label">Pengaturan</div>
+            <div class="toggle-row">
+                <span class="toggle-label">Aktifkan Web Search (SearXNG)</span>
+                <label class="toggle">
+                    <input type="checkbox" id="webSearchToggle">
+                    <span class="slider"></span>
+                </label>
             </div>
-        </main>
-    </div>
-    <script src="app.js"></script>
+        </div>
+
+        <!-- Model Selector -->
+        <div class="sidebar-section">
+            <div class="section-label">Model LLM</div>
+            <div class="model-selector">
+                <label class="model-option">
+                    <input type="radio" name="modelChoice" id="modelFinetuned" value="qwen3.5-9b-nlaw" checked>
+                    <span class="model-option-label">
+                        <span class="model-name">Fine-Tuned</span>
+                        <span class="model-desc">qwen3.5-9b-nlaw (Disarankan)</span>
+                    </span>
+                </label>
+                <label class="model-option">
+                    <input type="radio" name="modelChoice" id="modelVanilla" value="qwen3.5:9b">
+                    <span class="model-option-label">
+                        <span class="model-name">Vanilla</span>
+                        <span class="model-desc">qwen3.5:9b (Base model)</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Evaluation -->
+        <div class="sidebar-section">
+            <div class="section-label">Evaluasi</div>
+            <a href="evaluation.html" class="btn secondary">Buka Golden Test Set</a>
+        </div>
+
+        <div class="sidebar-footer">
+            Ditenagai oleh Qwen 3.5 &middot; Milvus &middot; SearXNG
+        </div>
+
+    </aside>
+
+    <!-- ══ Chat ════════════════════════════════ -->
+    <main class="chat-area">
+
+        <header class="chat-header">
+            <div class="chat-header-left">
+                <h1>Asisten Hukum AI</h1>
+                <p>Retrieval-Augmented Generation &middot; Hukum Indonesia</p>
+            </div>
+            <div class="online-pill">Online</div>
+        </header>
+
+        <div id="chatHistory" class="chat-history">
+            <div class="message system-message">
+                <div class="avatar">NL</div>
+                <div class="content">
+                    Selamat datang di NusantaraLaw. Saya siap membantu Anda memahami peraturan perundang-undangan Indonesia. Silakan ajukan pertanyaan hukum Anda.
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <form id="chatForm">
+                <input type="text" id="questionInput" placeholder="Ketik pertanyaan hukum Anda..." required autocomplete="off" />
+                <button type="submit" id="sendBtn" class="btn primary">Kirim</button>
+            </form>
+        </div>
+
+    </main>
+
+</div>
+<script src="app.js?v=4"></script>
 </body>
 </html>

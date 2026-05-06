@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Test Set - NusantaraLaw</title>
+    <link rel="stylesheet" href="style.css?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ── Evaluation-specific overrides ─────────── */
+        body { overflow: hidden; }
+
+        .eval-layout {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* ── Eval Sidebar ────────────────────────── */
+        .eval-sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: var(--s1);
+            border-right: 1px solid var(--b0);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .eval-sidebar-header {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--b0);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .eval-sidebar-header h2 {
+            font-family: 'Lora', serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .back-link {
+            font-size: 11.5px;
+            color: var(--t3);
+            text-decoration: none;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+        .back-link:hover { color: var(--gold); }
+
+        .eval-actions {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--b0);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-evaluate {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, var(--gold), #9a7a10);
+            color: #000;
+            font-size: 12.5px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            border-radius: var(--rs);
+            cursor: pointer;
+            transition: all 0.22s;
+            box-shadow: 0 2px 10px var(--gold-glow);
+        }
+        .btn-evaluate:hover {
+            background: linear-gradient(135deg, var(--gold-hi), var(--gold));
+            box-shadow: 0 4px 18px rgba(201,162,39,0.4);
+            transform: translateY(-1px);
+        }
+        .btn-evaluate:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .select-all-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--t2);
+            padding: 0 2px;
+        }
+        .select-all-row input { accent-color: var(--gold); }
+
+        /* Test Case List */
+        .test-cases-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .test-case-item {
+            padding: 10px 18px;
+            border-bottom: 1px solid var(--b0);
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        .test-case-item:hover { background: var(--s2); }
+        .test-case-item input[type="checkbox"] {
+            margin-top: 3px;
+            accent-color: var(--gold);
+            flex-shrink: 0;
+        }
+        .test-case-text {
+            font-size: 11.5px;
+            color: var(--t2);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+        .tc-index {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--gold);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* ── Eval Main ──────────────────────────── */
+        .eval-main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+            background: var(--bg);
+            min-width: 0;
+        }
+
+        .placeholder-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--t3);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* ── Result Card ─────────────────────────── */
+        .result-card {
+            background: var(--s1);
+            border: 1px solid var(--b0);
+            border-radius: var(--r);
+            margin-bottom: 24px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .result-card-header {
+            padding: 14px 20px;
+            background: var(--s2);
+            border-bottom: 1px solid var(--b0);
+        }
+
+        .result-card-header h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .result-instruction {
+            font-size: 12px;
+            color: var(--t2);
+        }
+
+        .result-gt {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(201,162,39,0.06);
+            border-left: 2px solid var(--gold);
+            border-radius: 0 var(--rs) var(--rs) 0;
+            font-size: 11.5px;
+            color: var(--t2);
+        }
+        .result-gt strong {
+            color: var(--gold);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .result-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--b0);
+        }
+
+        .model-col {
+            background: var(--s1);
+            padding: 18px 20px;
+        }
+
+        .model-col-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--t2);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--b0);
+        }
+        .model-col.finetuned .model-col-title { color: var(--gold); }
+
+        .response-box {
+            font-size: 12.5px;
+            line-height: 1.7;
+            color: var(--t1);
+            background: var(--s2);
+            border: 1px solid var(--b0);
+            border-radius: var(--rs);
+            padding: 12px 14px;
+            min-height: 90px;
+            margin-bottom: 14px;
+            word-break: break-word;
+        }
+
+        .layer-label {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+            color: var(--t3);
+            margin-bottom: 8px;
+            margin-top: 12px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .metrics-grid.two { grid-template-columns: repeat(2, 1fr); }
+
+        .metric-cell {
+            background: var(--s2);
+            border: 1px solid var(--b0);
+            border-radius: var(--rs);
+            padding: 8px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+        .metric-cell.winner {
+            border-color: var(--gold);
+            background: var(--gold-lo);
+        }
+        .metric-lbl {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--t3);
+            margin-bottom: 4px;
+        }
+        .metric-val {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--t1);
+        }
+        .metric-cell.winner .metric-val { color: var(--gold); }
+
+        /* ── Visualization ─────────────────────── */
+        .viz-section {
+            background: var(--s1);
+            border: 1px solid var(--b0);
+            border-radius: var(--r);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: none;
+        }
+        .viz-title {
+            font-family: 'Lora', serif;
+            font-size: 15px;
+            color: var(--t1);
+            margin-bottom: 4px;
+        }
+        .viz-subtitle {
+            font-size: 11.5px;
+            color: var(--t3);
+            margin-bottom: 18px;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 320px;
+        }
+        .chart-wrap {
+            position: relative;
+            background: var(--s2);
+            border: 1px solid var(--b0);
+            border-radius: var(--rs);
+            padding: 12px;
+        }
+
+        /* ── Loading overlay ─────────────────── */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(6,9,15,0.88);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            gap: 16px;
+        }
+        .spinner {
+            width: 44px; height: 44px;
+            border: 3px solid var(--b1);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 13.5px; color: var(--t2); text-align: center; }
+        .loading-text strong { color: var(--gold); display: block; margin-bottom: 4px; }
+
+        /* ── Summary Card ────────────────────── */
+        .summary-card {
+            background: var(--s1);
+            border: 1px solid var(--gold);
+            border-radius: var(--r);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 24px rgba(201,162,39,0.12);
+        }
+        .summary-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .summary-title {
+            font-family: 'Lora', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+        .summary-sub {
+            font-size: 11.5px;
+            color: var(--t3);
+            margin-top: 3px;
+        }
+        .summary-winner {
+            font-size: 12.5px;
+            font-weight: 600;
+            background: var(--s2);
+            border: 1px solid var(--b1);
+            border-radius: var(--rs);
+            padding: 6px 14px;
+        }
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .summary-table th {
+            padding: 8px 12px;
+            text-align: center;
+            color: var(--t3);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            border-bottom: 1px solid var(--b1);
+        }
+        .summary-table th:first-child { text-align: left; }
+        .summary-table td {
+            padding: 7px 12px;
+            border-bottom: 1px solid var(--b0);
+            color: var(--t2);
+        }
+        .metric-row-label { color: var(--t3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; }
+        .metric-row-val { text-align: center; font-weight: 600; font-size: 13px; color: var(--t1); }
+        .metric-row-val.winner { color: var(--gold); }
+        .th-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .vanilla-badge { background: var(--s3); color: var(--t2); border: 1px solid var(--b1); }
+        .ft-badge { background: var(--gold-lo); color: var(--gold); border: 1px solid rgba(201,162,39,0.3); }
+
+        /* ── Per-question latent space ──────── */
+        .per-q-viz {
+            border-top: 1px solid var(--b0);
+            padding: 18px 20px 20px;
+            background: var(--s2);
+        }
+        .per-q-viz-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--gold);
+            margin-bottom: 14px;
+        }
+        .per-q-viz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            height: 260px;
+        }
+
+        /* ── Global Latent Space Compilation ───── */
+        .global-viz-card {
+            background: var(--s1);
+            border: 1px solid var(--b1);
+            border-radius: var(--r);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+        .global-viz-header { margin-bottom: 14px; }
+        .global-viz-title {
+            font-family: 'Lora', serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+        .global-viz-sub {
+            font-size: 11px;
+            color: var(--t3);
+            line-height: 1.6;
+        }
+        .global-viz-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            height: 340px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .eval-sidebar { width: 220px; min-width: 220px; }
+            .eval-main { padding: 16px; }
+        }
+        @media (max-width: 700px) {
+            .result-body { grid-template-columns: 1fr; }
+            .per-q-viz-grid { grid-template-columns: 1fr; height: auto; }
+            .global-viz-charts { grid-template-columns: 1fr; height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="eval-layout">
+
+    <!-- ══ Sidebar ════════════════════════════ -->
+    <aside class="eval-sidebar">
+
+        <div class="eval-sidebar-header">
+            <h2>Golden Test Set</h2>
+            <a href="index.html" class="back-link">Kembali ke Chat</a>
+        </div>
+
+        <div class="eval-actions">
+            <button class="btn-evaluate" id="btnEvaluate" disabled>
+                Evaluasi Dipilih (<span id="selCount">0</span>)
+            </button>
+            <div class="select-all-row">
+                <input type="checkbox" id="selectAll">
+                <label for="selectAll">Pilih Semua</label>
+            </div>
+        </div>
+
+        <div id="testCasesList" class="test-cases-list">
+            <div style="padding:20px; text-align:center; color: var(--t3); font-size:12px;">Memuat data...</div>
+        </div>
+
+    </aside>
+
+    <!-- ══ Main Results ══════════════════════ -->
+    <main class="eval-main">
+        <div class="placeholder-hint" id="placeholder">
+            Pilih pertanyaan dari daftar dan klik Evaluasi untuk melihat perbandingan hasil.
+        </div>
+        <div id="vizSection" class="viz-section">
+            <div class="viz-title">Latent Space Visualization</div>
+            <div class="viz-subtitle">Distribusi representasi vektor (PCA &amp; t-SNE) dari jawaban model</div>
+            <div class="charts-grid">
+                <div class="chart-wrap"><canvas id="pcaChart"></canvas></div>
+                <div class="chart-wrap"><canvas id="tsneChart"></canvas></div>
+            </div>
+        </div>
+        <div id="resultsContainer"></div>
+    </main>
+
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">
+        <strong>Menjalankan Pipeline Evaluasi</strong>
+        Proses ini memerlukan beberapa menit tergantung jumlah batch.
+    </div>
+</div>
+
+<script src="evaluation.js?v=4"></script>
+</body>
+</html>

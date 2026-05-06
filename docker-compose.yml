@@ -21,6 +21,8 @@ services:
       - COLLECTION_NAME=nusantara_law
     volumes:
       - ./UU-PDP:/app/documents:ro   # Mount law documents read-only
+      - ./Model:/app/Model:ro        # Mount local models
+      - ./Test-Set:/app/Test-Set:ro  # Mount test cases
     depends_on:
       - milvus-standalone
       - searxng

@@ -1,0 +1,252 @@
+[
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, apa kewajiban pengendali data?",
+    "context": "Pengendali data harus menjaga keamanan",
+    "response": "Sesuai ketentuan, pengendali data pribadi wajib melindungi dan memastikan keamanan data pribadi dengan melakukan penyusunan dan penerapan langkah teknis operasional untuk melindungi data dari gangguan, akses tidak sah, hingga kebocoran data."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, siapakah yang berhak memproses data?",
+    "context": "Ketentuan pemrosesan",
+    "response": "Sesuai ketentuan, pemrosesan data pribadi berhak dilakukan oleh pengendali data pribadi dan/atau prosesor data pribadi yang ditunjuk secara sah setelah mendapatkan persetujuan eksplisit yang sah dari subjek data pribadi."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), apa definisi data pribadi?",
+    "context": "Diatur dalam ketentuan umum",
+    "response": "Sesuai ketentuan, data pribadi adalah data tentang orang perseorangan yang teridentifikasi atau dapat diidentifikasi secara tersendiri atau dikombinasi dengan informasi lainnya baik secara langsung maupun tidak langsung melalui sistem elektronik atau nonelektronik."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, apa itu data spesifik?",
+    "context": "Klasifikasi data",
+    "response": "Sesuai ketentuan, data pribadi yang bersifat spesifik meliputi data dan informasi kesehatan, data biometrik, data genetika, catatan kejahatan, data anak, data keuangan pribadi, dan/atau data lainnya sesuai dengan ketentuan peraturan perundang-undangan."
+  },
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, bagaimana aturan penyadapan diatur?",
+    "context": "Intersepsi",
+    "response": "Sesuai ketentuan, setiap orang dilarang melakukan penyadapan atau intersepsi atas informasi elektronik secara tanpa hak, kecuali penyadapan tersebut dilakukan dalam rangka penegakan hukum atas permintaan kepolisian, kejaksaan, atau institusi penegak hukum lainnya yang ditetapkan undang-undang."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, apa itu dokumen elektronik?",
+    "context": "Definisi",
+    "response": "Sesuai ketentuan, dokumen elektronik adalah setiap informasi elektronik yang dibuat, diteruskan, dikirimkan, diterima, atau disimpan dalam bentuk analog, digital, elektromagnetik, optikal, atau sejenisnya, yang dapat dilihat, ditampilkan, dan/atau didengar."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, siapa subjek hukum uu ini?",
+    "context": "Ruang lingkup UU",
+    "response": "Sesuai ketentuan, subjek hukum meliputi setiap orang perseorangan baik warga negara Indonesia maupun warga negara asing, serta badan hukum yang melakukan perbuatan hukum sebagaimana diatur dalam undang-undang terkait."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, bagaimana aturan penyadapan diatur?",
+    "context": "Intersepsi",
+    "response": "Sesuai ketentuan, setiap orang dilarang melakukan penyadapan atau intersepsi atas informasi elektronik secara tanpa hak, kecuali penyadapan tersebut dilakukan dalam rangka penegakan hukum atas permintaan kepolisian, kejaksaan, atau institusi penegak hukum lainnya yang ditetapkan undang-undang."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, apa itu data spesifik?",
+    "context": "Klasifikasi data",
+    "response": "Sesuai ketentuan, data pribadi yang bersifat spesifik meliputi data dan informasi kesehatan, data biometrik, data genetika, catatan kejahatan, data anak, data keuangan pribadi, dan/atau data lainnya sesuai dengan ketentuan peraturan perundang-undangan."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, apa sanksi pencemaran nama baik di ruang siber?",
+    "context": "Pasal karet ITE",
+    "response": "Sesuai ketentuan, perbuatan dengan sengaja dan tanpa hak mendistribusikan informasi elektronik yang memiliki muatan penghinaan atau pencemaran nama baik diancam dengan sanksi pidana penjara dan/atau denda yang pelaksanaannya diatur lebih lanjut sebagai delik aduan."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, apa itu data spesifik?",
+    "context": "Klasifikasi data",
+    "response": "Sesuai ketentuan, data pribadi yang bersifat spesifik meliputi data dan informasi kesehatan, data biometrik, data genetika, catatan kejahatan, data anak, data keuangan pribadi, dan/atau data lainnya sesuai dengan ketentuan peraturan perundang-undangan."
+  },
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, apa tugas lembaga pengawas?",
+    "context": "Fungsi kelembagaan",
+    "response": "Sesuai ketentuan, lembaga penyelenggara pengawasan bertugas melakukan pengawasan terhadap kepatuhan pelaksanaan pelindungan data pribadi, menjatuhkan sanksi administratif atas pelanggaran, serta memfasilitasi penyelesaian sengketa pelindungan data."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, apa itu tanda tangan elektronik?",
+    "context": "Validitas TTE",
+    "response": "Sesuai ketentuan, tanda tangan elektronik adalah tanda tangan yang terdiri atas informasi elektronik yang dilekatkan, terasosiasi atau terkait dengan informasi elektronik lainnya yang digunakan sebagai alat verifikasi dan autentikasi sah."
+  },
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, apa kewajiban menghapus informasi yang tidak relevan?",
+    "context": "Right to be forgotten",
+    "response": "Sesuai ketentuan, penyelenggara sistem elektronik wajib menghapus informasi elektronik dan/atau dokumen elektronik yang tidak relevan yang berada di bawah kendalinya atas permintaan orang yang bersangkutan berdasarkan penetapan pengadilan."
+  },
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, apa definisi data pribadi?",
+    "context": "Diatur dalam ketentuan umum",
+    "response": "Sesuai ketentuan, data pribadi adalah data tentang orang perseorangan yang teridentifikasi atau dapat diidentifikasi secara tersendiri atau dikombinasi dengan informasi lainnya baik secara langsung maupun tidak langsung melalui sistem elektronik atau nonelektronik."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), siapakah yang berhak memproses data?",
+    "context": "Ketentuan pemrosesan",
+    "response": "Sesuai ketentuan, pemrosesan data pribadi berhak dilakukan oleh pengendali data pribadi dan/atau prosesor data pribadi yang ditunjuk secara sah setelah mendapatkan persetujuan eksplisit yang sah dari subjek data pribadi."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, bagaimana aturan cross-border data transfer?",
+    "context": "Transfer data ke luar negeri",
+    "response": "Sesuai ketentuan, transfer data pribadi ke luar wilayah hukum Republik Indonesia dapat dilakukan jika negara penerima memiliki tingkat pelindungan data yang setara atau lebih tinggi, atau jika terdapat pelindungan yang memadai berdasarkan perjanjian internasional atau persetujuan subjek data."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, apa itu dokumen elektronik?",
+    "context": "Definisi",
+    "response": "Sesuai ketentuan, dokumen elektronik adalah setiap informasi elektronik yang dibuat, diteruskan, dikirimkan, diterima, atau disimpan dalam bentuk analog, digital, elektromagnetik, optikal, atau sejenisnya, yang dapat dilihat, ditampilkan, dan/atau didengar."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, bagaimana sanksi administratif diterapkan?",
+    "context": "Terdapat sanksi untuk kegagalan pelindungan",
+    "response": "Sesuai ketentuan, pelanggaran terhadap kewajiban pelindungan data dikenai sanksi administratif berupa peringatan tertulis, penghentian sementara kegiatan pemrosesan data, penghapusan data, hingga denda administratif paling tinggi dua persen dari pendapatan tahunan."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), bagaimana aturan penyadapan diatur?",
+    "context": "Intersepsi",
+    "response": "Sesuai ketentuan, setiap orang dilarang melakukan penyadapan atau intersepsi atas informasi elektronik secara tanpa hak, kecuali penyadapan tersebut dilakukan dalam rangka penegakan hukum atas permintaan kepolisian, kejaksaan, atau institusi penegak hukum lainnya yang ditetapkan undang-undang."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, bagaimana aturan penyadapan diatur?",
+    "context": "Intersepsi",
+    "response": "Sesuai ketentuan, setiap orang dilarang melakukan penyadapan atau intersepsi atas informasi elektronik secara tanpa hak, kecuali penyadapan tersebut dilakukan dalam rangka penegakan hukum atas permintaan kepolisian, kejaksaan, atau institusi penegak hukum lainnya yang ditetapkan undang-undang."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, bagaimana pembuktian elektronik diatur?",
+    "context": "Alat bukti",
+    "response": "Sesuai ketentuan, informasi elektronik dan/atau dokumen elektronik dan/atau hasil cetaknya merupakan alat bukti hukum yang sah dan merupakan perluasan dari alat bukti yang sah sesuai dengan hukum acara yang berlaku di Indonesia."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), bagaimana aturan penyadapan diatur?",
+    "context": "Intersepsi",
+    "response": "Sesuai ketentuan, setiap orang dilarang melakukan penyadapan atau intersepsi atas informasi elektronik secara tanpa hak, kecuali penyadapan tersebut dilakukan dalam rangka penegakan hukum atas permintaan kepolisian, kejaksaan, atau institusi penegak hukum lainnya yang ditetapkan undang-undang."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), siapakah yang berhak memproses data?",
+    "context": "Ketentuan pemrosesan",
+    "response": "Sesuai ketentuan, pemrosesan data pribadi berhak dilakukan oleh pengendali data pribadi dan/atau prosesor data pribadi yang ditunjuk secara sah setelah mendapatkan persetujuan eksplisit yang sah dari subjek data pribadi."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), apa sanksi pencemaran nama baik di ruang siber?",
+    "context": "Pasal karet ITE",
+    "response": "Sesuai ketentuan, perbuatan dengan sengaja dan tanpa hak mendistribusikan informasi elektronik yang memiliki muatan penghinaan atau pencemaran nama baik diancam dengan sanksi pidana penjara dan/atau denda yang pelaksanaannya diatur lebih lanjut sebagai delik aduan."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, apa saja asas pelindungan data?",
+    "context": "Asas di dalam UU",
+    "response": "Sesuai ketentuan, asas pelindungan data pribadi meliputi asas pelindungan, kepastian hukum, kepentingan umum, kemanfaatan, kehati-hatian, keseimbangan, pertanggungjawaban, dan kerahasiaan untuk melindungi hak asasi manusia."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), bagaimana aturan penyadapan diatur?",
+    "context": "Intersepsi",
+    "response": "Sesuai ketentuan, setiap orang dilarang melakukan penyadapan atau intersepsi atas informasi elektronik secara tanpa hak, kecuali penyadapan tersebut dilakukan dalam rangka penegakan hukum atas permintaan kepolisian, kejaksaan, atau institusi penegak hukum lainnya yang ditetapkan undang-undang."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, apa itu data spesifik?",
+    "context": "Klasifikasi data",
+    "response": "Sesuai ketentuan, data pribadi yang bersifat spesifik meliputi data dan informasi kesehatan, data biometrik, data genetika, catatan kejahatan, data anak, data keuangan pribadi, dan/atau data lainnya sesuai dengan ketentuan peraturan perundang-undangan."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), apa itu tanda tangan elektronik?",
+    "context": "Validitas TTE",
+    "response": "Sesuai ketentuan, tanda tangan elektronik adalah tanda tangan yang terdiri atas informasi elektronik yang dilekatkan, terasosiasi atau terkait dengan informasi elektronik lainnya yang digunakan sebagai alat verifikasi dan autentikasi sah."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, siapa subjek hukum uu ini?",
+    "context": "Ruang lingkup UU",
+    "response": "Sesuai ketentuan, subjek hukum meliputi setiap orang perseorangan baik warga negara Indonesia maupun warga negara asing, serta badan hukum yang melakukan perbuatan hukum sebagaimana diatur dalam undang-undang terkait."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, apa itu data spesifik?",
+    "context": "Klasifikasi data",
+    "response": "Sesuai ketentuan, data pribadi yang bersifat spesifik meliputi data dan informasi kesehatan, data biometrik, data genetika, catatan kejahatan, data anak, data keuangan pribadi, dan/atau data lainnya sesuai dengan ketentuan peraturan perundang-undangan."
+  },
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, apa tugas lembaga pengawas?",
+    "context": "Fungsi kelembagaan",
+    "response": "Sesuai ketentuan, lembaga penyelenggara pengawasan bertugas melakukan pengawasan terhadap kepatuhan pelaksanaan pelindungan data pribadi, menjatuhkan sanksi administratif atas pelanggaran, serta memfasilitasi penyelesaian sengketa pelindungan data."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), apa sanksi pencemaran nama baik di ruang siber?",
+    "context": "Pasal karet ITE",
+    "response": "Sesuai ketentuan, perbuatan dengan sengaja dan tanpa hak mendistribusikan informasi elektronik yang memiliki muatan penghinaan atau pencemaran nama baik diancam dengan sanksi pidana penjara dan/atau denda yang pelaksanaannya diatur lebih lanjut sebagai delik aduan."
+  },
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, apa itu data spesifik?",
+    "context": "Klasifikasi data",
+    "response": "Sesuai ketentuan, data pribadi yang bersifat spesifik meliputi data dan informasi kesehatan, data biometrik, data genetika, catatan kejahatan, data anak, data keuangan pribadi, dan/atau data lainnya sesuai dengan ketentuan peraturan perundang-undangan."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), kapan hak penghapusan data berlaku?",
+    "context": "Hak hak subjek data",
+    "response": "Sesuai ketentuan, hak penghapusan data atau right to be forgotten berlaku apabila data pribadi tersebut sudah tidak lagi diperlukan untuk tujuan pemrosesan, atau jika subjek data menarik persetujuannya dan tidak ada dasar hukum lain untuk pemrosesan."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, apa itu data spesifik?",
+    "context": "Klasifikasi data",
+    "response": "Sesuai ketentuan, data pribadi yang bersifat spesifik meliputi data dan informasi kesehatan, data biometrik, data genetika, catatan kejahatan, data anak, data keuangan pribadi, dan/atau data lainnya sesuai dengan ketentuan peraturan perundang-undangan."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, bagaimana aturan cross-border data transfer?",
+    "context": "Transfer data ke luar negeri",
+    "response": "Sesuai ketentuan, transfer data pribadi ke luar wilayah hukum Republik Indonesia dapat dilakukan jika negara penerima memiliki tingkat pelindungan data yang setara atau lebih tinggi, atau jika terdapat pelindungan yang memadai berdasarkan perjanjian internasional atau persetujuan subjek data."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), apa definisi data pribadi?",
+    "context": "Diatur dalam ketentuan umum",
+    "response": "Sesuai ketentuan, data pribadi adalah data tentang orang perseorangan yang teridentifikasi atau dapat diidentifikasi secara tersendiri atau dikombinasi dengan informasi lainnya baik secara langsung maupun tidak langsung melalui sistem elektronik atau nonelektronik."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), apa itu tanda tangan elektronik?",
+    "context": "Validitas TTE",
+    "response": "Sesuai ketentuan, tanda tangan elektronik adalah tanda tangan yang terdiri atas informasi elektronik yang dilekatkan, terasosiasi atau terkait dengan informasi elektronik lainnya yang digunakan sebagai alat verifikasi dan autentikasi sah."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, bagaimana sanksi administratif diterapkan?",
+    "context": "Terdapat sanksi untuk kegagalan pelindungan",
+    "response": "Sesuai ketentuan, pelanggaran terhadap kewajiban pelindungan data dikenai sanksi administratif berupa peringatan tertulis, penghentian sementara kegiatan pemrosesan data, penghapusan data, hingga denda administratif paling tinggi dua persen dari pendapatan tahunan."
+  },
+  {
+    "instruction": "Menurut UU No. 19 Tahun 2016, apa itu tanda tangan elektronik?",
+    "context": "Validitas TTE",
+    "response": "Sesuai ketentuan, tanda tangan elektronik adalah tanda tangan yang terdiri atas informasi elektronik yang dilekatkan, terasosiasi atau terkait dengan informasi elektronik lainnya yang digunakan sebagai alat verifikasi dan autentikasi sah."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, apa itu penyelenggaraan sertifikasi elektronik?",
+    "context": "PSrE",
+    "response": "Sesuai ketentuan, penyelenggaraan sertifikasi elektronik dilakukan oleh Penyelenggara Sertifikasi Elektronik Indonesia yang diakui pemerintah untuk menerbitkan Sertifikat Elektronik sebagai bukti identitas yang sah secara hukum."
+  },
+  {
+    "instruction": "Menurut Perpres No. 83 Tahun 2025, siapakah yang berhak memproses data?",
+    "context": "Ketentuan pemrosesan",
+    "response": "Sesuai ketentuan, pemrosesan data pribadi berhak dilakukan oleh pengendali data pribadi dan/atau prosesor data pribadi yang ditunjuk secara sah setelah mendapatkan persetujuan eksplisit yang sah dari subjek data pribadi."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), bagaimana sanksi administratif diterapkan?",
+    "context": "Terdapat sanksi untuk kegagalan pelindungan",
+    "response": "Sesuai ketentuan, pelanggaran terhadap kewajiban pelindungan data dikenai sanksi administratif berupa peringatan tertulis, penghentian sementara kegiatan pemrosesan data, penghapusan data, hingga denda administratif paling tinggi dua persen dari pendapatan tahunan."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), apa tugas lembaga pengawas?",
+    "context": "Fungsi kelembagaan",
+    "response": "Sesuai ketentuan, lembaga penyelenggara pengawasan bertugas melakukan pengawasan terhadap kepatuhan pelaksanaan pelindungan data pribadi, menjatuhkan sanksi administratif atas pelanggaran, serta memfasilitasi penyelesaian sengketa pelindungan data."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), apa kewajiban menghapus informasi yang tidak relevan?",
+    "context": "Right to be forgotten",
+    "response": "Sesuai ketentuan, penyelenggara sistem elektronik wajib menghapus informasi elektronik dan/atau dokumen elektronik yang tidak relevan yang berada di bawah kendalinya atas permintaan orang yang bersangkutan berdasarkan penetapan pengadilan."
+  },
+  {
+    "instruction": "Menurut UU No. 11 Tahun 2008 (ITE), bagaimana aturan cross-border data transfer?",
+    "context": "Transfer data ke luar negeri",
+    "response": "Sesuai ketentuan, transfer data pribadi ke luar wilayah hukum Republik Indonesia dapat dilakukan jika negara penerima memiliki tingkat pelindungan data yang setara atau lebih tinggi, atau jika terdapat pelindungan yang memadai berdasarkan perjanjian internasional atau persetujuan subjek data."
+  },
+  {
+    "instruction": "Menurut Perpres No. 82 Tahun 2023, apa kewajiban menghapus informasi yang tidak relevan?",
+    "context": "Right to be forgotten",
+    "response": "Sesuai ketentuan, penyelenggara sistem elektronik wajib menghapus informasi elektronik dan/atau dokumen elektronik yang tidak relevan yang berada di bawah kendalinya atas permintaan orang yang bersangkutan berdasarkan penetapan pengadilan."
+  },
+  {
+    "instruction": "Menurut UU No. 1 Tahun 2024, siapakah yang berhak memproses data?",
+    "context": "Ketentuan pemrosesan",
+    "response": "Sesuai ketentuan, pemrosesan data pribadi berhak dilakukan oleh pengendali data pribadi dan/atau prosesor data pribadi yang ditunjuk secara sah setelah mendapatkan persetujuan eksplisit yang sah dari subjek data pribadi."
+  },
+  {
+    "instruction": "Menurut UU No. 27 Tahun 2022 (PDP), bagaimana pembuktian elektronik diatur?",
+    "context": "Alat bukti",
+    "response": "Sesuai ketentuan, informasi elektronik dan/atau dokumen elektronik dan/atau hasil cetaknya merupakan alat bukti hukum yang sah dan merupakan perluasan dari alat bukti yang sah sesuai dengan hukum acara yang berlaku di Indonesia."
+  }
+]

@@ -6,5 +6,10 @@ router = APIRouter()
 
 @router.post("/chat", response_model=ChatResponse)
 def chat_endpoint(request: ChatRequest):
-    result = run_rag(request.question, request.use_web_search, model=request.model)
+    result = run_rag(
+        question=request.question,
+        use_web_search=request.use_web_search,
+        model=request.model,
+        use_hf=request.use_hf,
+    )
     return ChatResponse(**result)

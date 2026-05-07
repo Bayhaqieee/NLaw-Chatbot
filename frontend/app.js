@@ -5,11 +5,25 @@ const questionInput   = document.getElementById("questionInput");
 const sendBtn         = document.getElementById("sendBtn");
 const chatHistory     = document.getElementById("chatHistory");
 const webSearchToggle = document.getElementById("webSearchToggle");
+const hfToggle        = document.getElementById("hfToggle");
+const inferenceBadge  = document.getElementById("inferenceMode");
 const uploadForm      = document.getElementById("uploadForm");
 const pdfFile         = document.getElementById("pdfFile");
 const uploadBtn       = document.getElementById("uploadBtn");
 const uploadStatus    = document.getElementById("uploadStatus");
 const fileNameEl      = document.getElementById("fileName");
+
+// ── Inference mode toggle ─────────────────────────────────────────────────
+hfToggle.addEventListener("change", () => {
+    const isHF = hfToggle.checked;
+    inferenceBadge.textContent = isHF ? "● HuggingFace" : "● Lokal";
+    inferenceBadge.className   = "inference-badge " + (isHF ? "hf" : "local");
+
+    // When HF is selected, model radio buttons become irrelevant — dim them
+    document.querySelectorAll('.model-option').forEach(el => {
+        el.style.opacity = isHF ? "0.4" : "1";
+    });
+});
 
 function getSelectedModel() {
     const sel = document.querySelector('input[name="modelChoice"]:checked');
@@ -18,21 +32,20 @@ function getSelectedModel() {
 
 // File picker display
 pdfFile.addEventListener("change", () => {
-    if (pdfFile.files[0]) {
-        fileNameEl.textContent = pdfFile.files[0].name;
-    } else {
-        fileNameEl.textContent = "Belum ada file dipilih";
-    }
+    fileNameEl.textContent = pdfFile.files[0] ? pdfFile.files[0].name : "Belum ada file dipilih";
 });
 
-// ── Chat Submit ──────────────────────────────────
+// ── Chat Submit ───────────────────────────────────────────────────────────
 chatForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const question = questionInput.value.trim();
     if (!question) return;
 
+    const useHF        = hfToggle.checked;
     const selectedModel = getSelectedModel();
-    const modelLabel = selectedModel === "qwen3.5-9b-nlaw" ? "Fine-Tuned" : "Vanilla";
+    const modelLabel   = useHF
+        ? "HuggingFace"
+        : (selectedModel === "qwen3.5-9b-nlaw" ? "Fine-Tuned" : "Vanilla");
 
     appendMessage(question, "user-message", "U");
     questionInput.value = "";
@@ -48,15 +61,16 @@ chatForm.addEventListener("submit", async (e) => {
             body: JSON.stringify({
                 question,
                 use_web_search: webSearchToggle.checked,
-                model: selectedModel
+                use_hf:         useHF,
+                model:          selectedModel,
             })
         });
 
-        if (!response.ok) throw new Error("Terjadi kesalahan pada server.");
+        if (!response.ok) throw new Error(`Server error ${response.status}`);
 
         const data = await response.json();
         document.getElementById(loadingId)?.remove();
-        appendResponseWithSources(data.answer, data.sources, data.web_results, data.toon_tokens_saved, modelLabel);
+        appendResponseWithSources(data.answer, data.sources, data.web_results, data.toon_tokens_saved, modelLabel, useHF);
 
     } catch (error) {
         document.getElementById(loadingId)?.remove();
@@ -69,7 +83,7 @@ chatForm.addEventListener("submit", async (e) => {
     }
 });
 
-// ── Upload Submit ────────────────────────────────
+// ── Upload Submit ─────────────────────────────────────────────────────────
 uploadForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const file = pdfFile.files[0];
@@ -83,10 +97,7 @@ uploadForm.addEventListener("submit", async (e) => {
     formData.append("file", file);
 
     try {
-        const response = await fetch(`${API_BASE_URL}/upload`, {
-            method: "POST",
-            body: formData
-        });
+        const response = await fetch(`${API_BASE_URL}/upload`, { method: "POST", body: formData });
         const data = await response.json();
         if (response.ok) {
             uploadStatus.textContent = `Sukses! ${data.chunks_embedded} chunks telah diindeks.`;
@@ -105,44 +116,47 @@ uploadForm.addEventListener("submit", async (e) => {
     }
 });
 
-// ── Helpers ──────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────
 function appendMessage(text, className, avatarLabel) {
     const id = "msg-" + Date.now();
-    const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${className}`;
-    msgDiv.id = id;
-    msgDiv.innerHTML = `
+    const div = document.createElement("div");
+    div.className = `message ${className}`;
+    div.id = id;
+    div.innerHTML = `
         <div class="avatar">${avatarLabel}</div>
         <div class="content">${escapeHtml(text).replace(/\n/g, "<br>")}</div>
     `;
-    chatHistory.appendChild(msgDiv);
+    chatHistory.appendChild(div);
     scrollToBottom();
     return id;
 }
 
 function appendTyping() {
     const id = "msg-" + Date.now();
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message system-message";
-    msgDiv.id = id;
-    msgDiv.innerHTML = `
+    const div = document.createElement("div");
+    div.className = "message system-message";
+    div.id = id;
+    div.innerHTML = `
         <div class="avatar">NL</div>
-        <div class="typing-indicator">
-            <span></span><span></span><span></span>
-        </div>
+        <div class="typing-indicator"><span></span><span></span><span></span></div>
     `;
-    chatHistory.appendChild(msgDiv);
+    chatHistory.appendChild(div);
     scrollToBottom();
     return id;
 }
 
-function appendResponseWithSources(answer, sources, webResults, tokensSaved, modelLabel) {
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message system-message";
+function appendResponseWithSources(answer, sources, webResults, tokensSaved, modelLabel, isHF) {
+    const div = document.createElement("div");
+    div.className = "message system-message";
 
-    const isFt = modelLabel === "Fine-Tuned";
+    const isFt    = modelLabel === "Fine-Tuned";
+    const isHFBadge = modelLabel === "HuggingFace";
+    let badgeColor = isHFBadge ? '#38bdf8' : (isFt ? 'var(--gold)' : 'var(--t3)');
+    let badgeBg    = isHFBadge ? 'rgba(56,189,248,0.12)' : (isFt ? 'var(--gold-lo)' : 'var(--s3)');
+    let badgeBorder= isHFBadge ? 'rgba(56,189,248,0.3)' : (isFt ? 'rgba(201,162,39,0.3)' : 'var(--b1)');
+
     const modelBadge = modelLabel
-        ? `<span style="display:inline-block;margin-bottom:8px;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${isFt ? 'var(--gold)' : 'var(--t3)' };background:${isFt ? 'var(--gold-lo)' : 'var(--s3)'};border:1px solid ${isFt ? 'rgba(201,162,39,0.3)' : 'var(--b1)'};border-radius:4px;padding:2px 8px;">${modelLabel}</span>`
+        ? `<span style="display:inline-block;margin-bottom:8px;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${badgeColor};background:${badgeBg};border:1px solid ${badgeBorder};border-radius:4px;padding:2px 8px;">${modelLabel}</span>`
         : '';
 
     let sourcesHTML = "";
@@ -159,7 +173,7 @@ function appendResponseWithSources(answer, sources, webResults, tokensSaved, mod
         sourcesHTML += `</div>`;
     }
 
-    msgDiv.innerHTML = `
+    div.innerHTML = `
         <div class="avatar">NL</div>
         <div class="content">
             ${modelBadge}
@@ -167,7 +181,7 @@ function appendResponseWithSources(answer, sources, webResults, tokensSaved, mod
             ${sourcesHTML}
         </div>
     `;
-    chatHistory.appendChild(msgDiv);
+    chatHistory.appendChild(div);
     scrollToBottom();
 }
 

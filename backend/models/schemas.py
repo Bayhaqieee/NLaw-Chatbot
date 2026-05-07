@@ -4,8 +4,9 @@ from typing import List, Optional
 class ChatRequest(BaseModel):
     question: str
     use_web_search: bool = False
+    use_hf: bool = False           # True = HuggingFace Inference API; False (default) = local Ollama
     session_id: Optional[str] = None
-    model: Optional[str] = "qwen3.5-9b-nlaw"  # vanilla: qwen3.5:9b, finetuned: qwen3.5-9b-nlaw
+    model: Optional[str] = "qwen3.5-9b-nlaw"  # local Ollama model name (ignored when use_hf=True)
 
 class SourceCitation(BaseModel):
     pasal: str

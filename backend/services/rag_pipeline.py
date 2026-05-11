@@ -5,11 +5,16 @@ from services.toon_formatter import format_legal_context_toon, format_web_contex
 from services.hf_inference import query_hf_api
 from services.ollama_client import generate_local, VANILLA_SYSTEM, FINETUNED_SYSTEM, FINETUNED_MODEL
 
+# System prompt for the chat endpoint.
+# Prioritizes web search results when available, falls back to RAG + general knowledge.
+# Does NOT force document-only answers so general questions (e.g. current president) work.
 CHAT_SYSTEM = (
-    "Anda adalah pakar hukum Indonesia yang presisi dan terpercaya. "
-    "Jawab pertanyaan hukum secara akurat berdasarkan konteks yang diberikan. "
-    "Jika informasi tidak ada dalam konteks, gunakan pengetahuan hukum Indonesia Anda. "
-    "Berikan jawaban yang jelas, terstruktur, dan mudah dipahami."
+    "Anda adalah asisten hukum Indonesia yang cerdas dan informatif. "
+    "Jika terdapat hasil pencarian web, gunakan informasi tersebut sebagai sumber utama. "
+    "Jika terdapat konteks dokumen hukum, gunakan untuk pertanyaan hukum. "
+    "Untuk pertanyaan umum (bukan hukum), jawab dari pengetahuan umum Anda tanpa merujuk dokumen. "
+    "JANGAN mengatakan 'informasi tidak tersedia dalam dokumen' untuk pertanyaan umum. "
+    "Berikan jawaban yang informatif, akurat, dan langsung."
 )
 
 
@@ -25,15 +30,19 @@ def run_rag(question: str, use_web_search: bool,
     # ── Optional web augmentation ──────────────────────────────────────────
     web_results = []
     if use_web_search:
-        query = f"{question} site:hukumonline.com OR site:jdih.go.id OR site:peraturan.go.id"
-        web_results = search_web(query)
+        # Plain query — no site: restriction so general questions (e.g. current president)
+        # also work. SearXNG will search across all configured engines.
+        web_results = search_web(question)
 
-    # ── Prompt assembly ────────────────────────────────────────────────────
+
+    # ── Prompt assembly — ZERO-SHOT, identical for all models ─────────────────
+    # Same structure as the evaluation prompt so chat and eval are consistent.
+    # System prompt (per model) handles persona; no format injection here.
     legal_toon = format_legal_context_toon(chunks)
     web_toon   = format_web_context_toon(web_results)
 
     prompt = (
-        f"{legal_toon}\n{web_toon}\n\n"
+        f"Konteks:\n{legal_toon}\n{web_toon}\n\n"
         f"Pertanyaan: {question}\n"
         f"Jawaban:"
     )
@@ -50,10 +59,11 @@ def run_rag(question: str, use_web_search: bool,
             answer = f"⚠️ HuggingFace API Error: {answer}"
     else:
         # Local Ollama path (default)
-        system = FINETUNED_SYSTEM if model == FINETUNED_MODEL else VANILLA_SYSTEM
+        system = CHAT_SYSTEM  # unified chat persona
         print(f"[rag] Using Ollama model: {model}")
         try:
-            answer = generate_local(prompt=prompt, model=model, system_prompt=system)
+            answer = generate_local(prompt=prompt, model=model,
+                                    system_prompt=system, is_chat=True)
         except Exception as e:
             print(f"[rag] Ollama error: {e}")
             answer = f"⚠️ Ollama tidak dapat dijangkau. Pastikan Ollama berjalan di host. Error: {e}"

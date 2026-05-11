@@ -18,8 +18,9 @@ TEST_SET_PATH = "/app/Test-Set/data-test.json" if os.path.exists("/app/Test-Set/
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "Test-Set", "data-test.json"
 )
 
-EMBED_MODEL = "qwen3-embedding:8b"
-TOP_K_EVAL  = 5   # number of RAG chunks to retrieve per question
+EMBED_MODEL      = "qwen3-embedding:8b"
+TOP_K_EVAL       = 5    # number of RAG chunks to retrieve per question
+MAX_CONTEXT_CHARS = 1800  # ~450 tokens; keeps total prompt well under num_ctx=4096
 
 
 class EvaluationRequest(BaseModel):
@@ -90,9 +91,10 @@ def evaluate_instructions(request: EvaluationRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load test cases: {e}")
 
-    results      = []
     total_start  = time.time()
 
+    # ── Phase 1: Prepare all cases (context retrieval + prompt assembly) ───────
+    cases = []
     for instruction in request.instructions:
         case = next((c for c in all_test_cases if c["instruction"] == instruction), None)
         if not case:
@@ -101,79 +103,79 @@ def evaluate_instructions(request: EvaluationRequest):
         fallback_ctx = case.get("context", "")
         ground_truth = case.get("response", "")
 
-        # ── Retrieve real legal context from Milvus
+        # ── Build evaluation context ──────────────────────────────────────────
+        # Strategy: use full Milvus RAG (all top-5 chunks, no char limit) as primary.
+        # The test-set context field is a short keyword stub; include it as a hint.
+        # Both are combined so the model has maximum signal to generate correctly.
         rich_context = _build_rich_context(instruction, fallback_ctx)
-        print(f"[eval] Context length for '{instruction[:40]}...': {len(rich_context)} chars")
+        print(f"[eval] RAG context: {len(rich_context)} chars for '{instruction[:40]}...'")
 
-        # Trim context to most relevant 3 chunks only (reduce noise)
-        context_lines = rich_context.split("\n")
-        # Keep first 3 numbered chunks
-        trimmed = []
-        chunk_count = 0
-        for line in context_lines:
-            trimmed.append(line)
-            if line.strip().startswith("[") and line.strip()[1:2].isdigit():
-                chunk_count += 1
-                if chunk_count >= 3:
-                    break
-        trimmed_context = "\n".join(trimmed)
+        # Combine RAG with the test-set's own context label (short keyword hint)
+        if fallback_ctx and fallback_ctx not in rich_context:
+            combined_context = f"{rich_context}\n\nKonteks tambahan: {fallback_ctx}"
+        else:
+            combined_context = rich_context
 
-        # Prompt format: instruct models to answer directly from legal knowledge.
-        # Fine-tuned model is prompted to start with 'Sesuai ketentuan,' to align
-        # with ground-truth format, boosting METEOR, ROUGE, and Sentence Similarity.
-        prompt_vanilla = (
-            f"Konteks hukum yang relevan:\n{trimmed_context}\n\n"
-            f"Pertanyaan: {instruction}\n"
-            f"Jawaban:"
-        )
-        prompt_finetuned = (
-            f"Konteks:\n{trimmed_context}\n\n"
-            f"Pertanyaan: {instruction}\n"
-            f"Jawaban: Sesuai ketentuan,"
-        )
+        cases.append({
+            "instruction":  instruction,
+            "ground_truth": ground_truth,
+            "rich_context": rich_context,
+            "prompt": (
+                f"Konteks:\n{combined_context}\n\n"
+                f"Pertanyaan: {instruction}\n"
+                f"Jawaban:"
+            ),
+        })
 
-        # ── Generation
+
+    # ── Phase 2: ALL vanilla (qwen3.5:9b) — one model load, no switching ─────
+    print(f"[eval] === Vanilla batch: {len(cases)} questions ===")
+    for c in cases:
         t0 = time.time()
-        vanilla_response  = generate_local(prompt=prompt_vanilla, model="qwen3.5:9b") or "Generation Failed"
-        vanilla_time      = round(time.time() - t0, 2)
+        c["vanilla_response"] = generate_local(c["prompt"], model="qwen3.5:9b") or "Generation Failed"
+        c["vanilla_time"]     = round(time.time() - t0, 2)
+        print(f"[eval] Vanilla {c['vanilla_time']}s — {c['instruction'][:40]}")
 
+    # ── Phase 3: ALL fine-tuned (qwen3.5-9b-nlaw) — one model load ───────────
+    print(f"[eval] === Fine-tuned batch: {len(cases)} questions ===")
+    for c in cases:
         t1 = time.time()
-        # Note: prompt_finetuned ends with 'Sesuai ketentuan,' as answer prefix
-        ft_raw = generate_local(prompt=prompt_finetuned, model="qwen3.5-9b-nlaw") or "Generation Failed"
-        # Prepend the prefix we injected so the full sentence is in the response
-        finetuned_response = ("Sesuai ketentuan, " + ft_raw).strip() if ft_raw != "Generation Failed" else ft_raw
-        finetuned_time     = round(time.time() - t1, 2)
+        c["finetuned_response"] = generate_local(c["prompt"], model="qwen3.5-9b-nlaw") or "Generation Failed"
+        c["finetuned_time"]     = round(time.time() - t1, 2)
+        print(f"[eval] FT {c['finetuned_time']}s — {c['instruction'][:40]}")
 
-        # ── Metrics
+    # ── Phase 4: Metrics + visualization ──────────────────────────────────────
+    results = []
+    for c in cases:
         t2 = time.time()
-        vanilla_metrics   = run_full_evaluation([vanilla_response],   [ground_truth])
-        finetuned_metrics = run_full_evaluation([finetuned_response], [ground_truth])
+        vanilla_metrics   = run_full_evaluation([c["vanilla_response"]],   [c["ground_truth"]])
+        finetuned_metrics = run_full_evaluation([c["finetuned_response"]], [c["ground_truth"]])
         eval_time = round(time.time() - t2, 2)
 
-        # ── Combined latent space visualization
-        v_emb  = get_embeddings_local(vanilla_response,   model=EMBED_MODEL)
-        ft_emb = get_embeddings_local(finetuned_response, model=EMBED_MODEL)
-        gt_emb = get_embeddings_local(ground_truth,       model=EMBED_MODEL)
+        v_emb  = get_embeddings_local(c["vanilla_response"],   model=EMBED_MODEL)
+        ft_emb = get_embeddings_local(c["finetuned_response"], model=EMBED_MODEL)
+        gt_emb = get_embeddings_local(c["ground_truth"],       model=EMBED_MODEL)
         combined_viz = _combined_viz(v_emb, ft_emb, gt_emb)
 
         results.append({
-            "instruction":   instruction,
-            "ground_truth":  ground_truth,
-            "context_used":  rich_context[:300] + "..." if len(rich_context) > 300 else rich_context,
-            "combined_viz":  combined_viz,
-            "_embs": {"v": v_emb, "ft": ft_emb, "gt": gt_emb},  # kept for global viz
+            "instruction":  c["instruction"],
+            "ground_truth": c["ground_truth"],
+            "context_used": c["rich_context"][:300] + "..." if len(c["rich_context"]) > 300 else c["rich_context"],
+            "combined_viz": combined_viz,
+            "_embs": {"v": v_emb, "ft": ft_emb, "gt": gt_emb},
             "vanilla": {
-                "response":     vanilla_response,
+                "response":     c["vanilla_response"],
                 "metrics":      vanilla_metrics,
-                "gen_time_sec": vanilla_time,
+                "gen_time_sec": c["vanilla_time"],
             },
             "finetuned": {
-                "response":     finetuned_response,
+                "response":     c["finetuned_response"],
                 "metrics":      finetuned_metrics,
-                "gen_time_sec": finetuned_time,
+                "gen_time_sec": c["finetuned_time"],
             },
             "eval_time_sec": eval_time,
         })
+
 
     # ── Global latent space visualization across all questions ─────────────
     # Stack: [v_q1, ft_q1, gt_q1, v_q2, ft_q2, gt_q2, ...]

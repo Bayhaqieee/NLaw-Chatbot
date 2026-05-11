@@ -2,124 +2,163 @@ import re
 import requests
 import os
 
-OLLAMA_HOST  = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
+OLLAMA_HOST     = os.getenv("OLLAMA_HOST", "http://host.docker.internal:11434")
 FINETUNED_MODEL = "qwen3.5-9b-nlaw"
+VANILLA_MODEL   = "qwen3.5:9b"
 
-# ── Common stop tokens — shared by both models ─────────────────────────────
-_COMMON_STOP = [
-    "Pertanyaan:",       # prevents re-generating the Q&A template
-    "Konteks:",          # prevents re-generating context header
-    "###",
-    "<|im_end|>",
-    "<|im_start|>",      # Qwen chat-template token must be stopped
-    "<|endoftext|>",     # EOS token leaking through GGUF
-    "\n\nJawaban:",      # stops repetition loops (second Jawaban: block)
-    "\n\n\n",            # stops excessive blank lines
+# Stop tokens for vanilla (/api/generate)
+_VANILLA_STOP = [
+    "Pertanyaan:", "Konteks:", "###",
+    "<|im_end|>", "<|im_start|>", "<|endoftext|>",
+    "\n\nJawaban:", "\n\n\n",
 ]
 
-# ── Vanilla model (qwen3.5:9b) ─────────────────────────────────────────────
+# Stop tokens for FT (/api/chat) — NO chat-template tokens;
+# /api/chat handles end-of-turn. Keeping them fires immediately after 1 sentence.
+_FT_STOP = [
+    "Pertanyaan:", "Konteks:", "###", "\n\nJawaban:",
+]
+
 VANILLA_OPTIONS = {
-    "num_predict":    600,
-    "temperature":    0.1,
-    "top_p":          0.9,
-    "top_k":          40,
-    "repeat_penalty": 1.2,
+    "num_predict": 600, "temperature": 0.1, "top_p": 0.9,
+    "top_k": 40, "repeat_penalty": 1.2, "repeat_last_n": 256,
+    "num_ctx": 4096, "stop": _VANILLA_STOP,
+}
+
+# Evaluation & chat options for fine-tuned model.
+# num_ctx MUST be set: without it the GGUF uses its compiled native context (~2048).
+# A 1673-token prompt leaves only 375 tokens → model generates 1 stop token → empty.
+FINETUNED_OPTIONS = {
+    "num_predict": 512,
+    "temperature": 0.08,
+    "top_p":       0.90,
+    "top_k":       30,
+    "repeat_penalty": 1.55,
+    "repeat_last_n":  512,
+    "num_ctx":     4096,   # CRITICAL: prevents 1-token generation on long prompts
+    "stop":        _FT_STOP,
+}
+
+# Chat-specific options for FT: slightly more creative for natural conversation
+CHAT_FT_OPTIONS = {
+    "num_predict": 600,
+    "temperature": 0.15,
+    "top_p":       0.92,
+    "top_k":       40,
+    "repeat_penalty": 1.4,
     "repeat_last_n":  256,
-    "stop":           _COMMON_STOP,
+    "num_ctx":     4096,
+    "stop":        _FT_STOP,
 }
 
 VANILLA_SYSTEM = (
     "Anda adalah pakar hukum Indonesia yang berpengalaman. "
-    "Jawab setiap pertanyaan secara LANGSUNG dan AKURAT berdasarkan konteks hukum yang diberikan "
-    "dan pengetahuan hukum Indonesia Anda. "
-    "PENTING: Jangan pernah mengatakan 'dokumen tidak tersedia', 'tidak dapat dijawab', atau "
-    "'UU X tidak ada dalam dokumen'. Selalu berikan jawaban substantif berdasarkan hukum Indonesia."
+    "SELALU jawab dari pengetahuan hukum Indonesia. "
+    "JANGAN mengatakan 'tidak dapat menjawab', 'dokumen tidak tersedia', atau penolakan apapun. "
+    "Jika konteks tidak relevan, tetap jawab dari pengetahuan hukum Indonesia."
 )
 
-# ── Fine-tuned model (qwen3.5-9b-nlaw) ────────────────────────────────────
-# High repeat_penalty is ESSENTIAL to prevent looping.
-# repeat_last_n 512 covers full context window for dedup detection.
-FINETUNED_OPTIONS = {
-    "num_predict":    500,
-    "temperature":    0.12,
-    "top_p":          0.90,
-    "top_k":          30,
-    "repeat_penalty": 1.55,     # must be high — model loops without this
-    "repeat_last_n":  512,
-    "stop":           _COMMON_STOP,
-}
-
 FINETUNED_SYSTEM = (
-    "Anda adalah pakar hukum Indonesia. "
-    "Jawab pertanyaan secara LANGSUNG dan AKURAT mulai dengan 'Sesuai ketentuan, ...'. "
-    "Berikan SATU jawaban singkat dan tepat — jangan mengulangi atau merevisi jawaban Anda. "
-    "JANGAN pernah mengatakan 'dokumen tidak tersedia' atau 'tidak dapat dijawab'. "
-    "Jika konteks tidak lengkap, gunakan pengetahuan hukum Indonesia Anda untuk menjawab."
+    "Anda adalah pakar hukum Indonesia yang sangat ahli dengan pengetahuan mendalam tentang semua UU dan Perpres Indonesia. "
+    "Jawab setiap pertanyaan secara LANGSUNG, AKURAT, dan KOMPREHENSIF (minimal 2-3 kalimat). "
+    "Jika konteks dokumen tidak relevan dengan pertanyaan, ABAIKAN konteks dan jawab dari pengetahuan hukum Indonesia Anda. "
+    "JANGAN PERNAH mengatakan: 'tidak ada informasi', 'tidak dapat dijawab', 'konteks tidak relevan', atau sejenisnya. "
+    "Gunakan pengetahuan tentang UU ITE, UU PDP, Perpres, dan regulasi Indonesia lainnya untuk menjawab."
 )
 
 _THINK_RE    = re.compile(r"<think>.*?</think>", re.DOTALL)
 _JUNK_TOKENS = re.compile(r"(<\|[a-z_]+\|>)", re.MULTILINE)
-
-# Patterns that signal the model is starting a second pass / self-correction.
-# We keep only everything BEFORE the first occurrence of any of these.
 _SECOND_PASS = [
-    "\n\nJawaban:",
-    "\n\nBerdasarkan dokumen",
-    "\n\nDokumen yang tersedia",
+    "\n\nJawaban:",          # model restarts new answer block
     "\nJawaban yang benar",
     "\nJawaban yang lebih",
     "\nJawaban yang tepat",
-    "\nJawaban: Berd",
-    "\nApakah ini kesalahan",
-    "\nKoreksi:",
+    "\nKoreksi:",            # self-correction patterns
+    "\n\nKoreksi:",
+    "\n**Koreksi:**",
     "\nCatatan tambahan:",
+    "\n(Catatan:",           # footnote/loop trigger
+    "\n*(Catatan:",
+    "\n\n*(Catatan",
+    "\n**Jawaban Akhir:**",
+    "\n**Jawaban yang paling",
     "\nNamun, jika merujuk",
-    "\nNamun, berdasarkan",
 ]
 
 
 def _clean(text: str) -> str:
-    """Strip <think> blocks, leaked tokens, and all second-pass repetitions."""
     text = _THINK_RE.sub("", text)
     text = _JUNK_TOKENS.sub("", text)
-    # Truncate at the earliest second-pass marker
+    # Strip BEFORE second-pass — leading \n causes false-positive matches
+    # e.g. content starting with '\n\nBerdasarkan...' was being deleted
+    text = text.strip()
     for pat in _SECOND_PASS:
         if pat in text:
             text = text.split(pat)[0]
     return text.strip()
 
 
-def generate_local(prompt: str, model: str = "qwen3.5:9b",
-                   system_prompt: str = None) -> str:
-    """Generate text using a local Ollama model."""
-    url  = f"{OLLAMA_HOST}/api/generate"
-    opts = (FINETUNED_OPTIONS if model == FINETUNED_MODEL else VANILLA_OPTIONS).copy()
-
-    # Inject default system prompts if caller didn't supply one
-    if system_prompt is None:
-        system_prompt = FINETUNED_SYSTEM if model == FINETUNED_MODEL else VANILLA_SYSTEM
-
+def _generate_ft_chat(prompt: str, system_prompt: str, is_chat: bool = False) -> str:
+    """Use /api/chat for FT model — proper Qwen chat template formatting.
+    
+    is_chat=True  → CHAT_FT_OPTIONS  (slightly more creative, for chatbot)
+    is_chat=False → FINETUNED_OPTIONS (strict, deterministic, for evaluation)
+    """
+    url  = f"{OLLAMA_HOST}/api/chat"
+    opts = (CHAT_FT_OPTIONS if is_chat else FINETUNED_OPTIONS).copy()
     payload = {
-        "model":   model,
-        "prompt":  prompt,
-        "stream":  False,
-        "think":   False,
-        "options": opts,
-        "system":  system_prompt,
+        "model":      FINETUNED_MODEL,
+        "messages":   [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": prompt},
+        ],
+        "stream":     False,
+        "keep_alive": "10m",
+        "options":    opts,
     }
-
     try:
         resp = requests.post(url, json=payload, timeout=300)
         resp.raise_for_status()
-        raw = resp.json().get("response", "")
-        return _clean(raw)
+        content = resp.json().get("message", {}).get("content", "")
+        cleaned = _clean(content)
+        if not cleaned:
+            print(f"[ollama] FT chat returned empty — response: {resp.json()}")
+        return cleaned
     except Exception as e:
-        print(f"Ollama generation error for model {model}: {e}")
+        print(f"[ollama] FT chat error: {e}")
+        return None
+
+def generate_local(prompt: str, model: str = VANILLA_MODEL,
+                   system_prompt: str = None, is_chat: bool = False) -> str:
+    if system_prompt is None:
+        system_prompt = FINETUNED_SYSTEM if model == FINETUNED_MODEL else VANILLA_SYSTEM
+
+    # FT model uses /api/chat for proper Qwen3.5 chat template
+    if model == FINETUNED_MODEL:
+        return _generate_ft_chat(prompt, system_prompt, is_chat=is_chat)
+
+    # Vanilla uses /api/generate with think:False
+    url  = f"{OLLAMA_HOST}/api/generate"
+    opts = VANILLA_OPTIONS.copy()
+    payload = {
+        "model":      model,
+        "prompt":     prompt,
+        "stream":     False,
+        "think":      False,
+        "keep_alive": "10m",
+        "options":    opts,
+        "system":     system_prompt,
+    }
+    try:
+        resp = requests.post(url, json=payload, timeout=300)
+        resp.raise_for_status()
+        return _clean(resp.json().get("response", ""))
+    except Exception as e:
+        print(f"[ollama] Vanilla error: {e}")
         return None
 
 
 def get_embeddings_local(text: str, model: str = "qwen3-embedding:8b") -> list:
-    """Get embeddings via Ollama /api/embed (newer endpoint)."""
     url     = f"{OLLAMA_HOST}/api/embed"
     payload = {"model": model, "input": text}
     try:
@@ -128,5 +167,5 @@ def get_embeddings_local(text: str, model: str = "qwen3-embedding:8b") -> list:
         embs = resp.json().get("embeddings", [])
         return embs[0] if embs else []
     except Exception as e:
-        print(f"Ollama embed error for model {model}: {e}")
+        print(f"[ollama] Embed error: {e}")
         return []

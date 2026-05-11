@@ -160,18 +160,41 @@ function appendResponseWithSources(answer, sources, webResults, tokensSaved, mod
         : '';
 
     let sourcesHTML = "";
-    if ((sources && sources.length > 0) || (webResults && webResults.length > 0)) {
+    const hasDocs = sources && sources.length > 0;
+    const hasWeb  = webResults && webResults.length > 0;
+
+    if (hasDocs || hasWeb) {
         sourcesHTML += `<div class="source-box"><strong>Sumber Rujukan</strong><ul>`;
+
+        // Document sources
         (sources || []).forEach(s => {
-            sourcesHTML += `<li>${s.sumber} (Halaman ${s.page_no})</li>`;
+            sourcesHTML += `<li class="doc-source-item">
+                <span class="source-icon">📄</span>
+                <span>${escapeHtml(s.sumber)} <span class="page-badge">Hal. ${s.page_no}</span></span>
+            </li>`;
         });
+
+        // Web sources — show domain + snippet + clickable link
         (webResults || []).forEach(w => {
-            sourcesHTML += `<li><a href="${w.url}" target="_blank">Web: ${w.url}</a></li>`;
+            let domain = w.url;
+            try { domain = new URL(w.url).hostname.replace(/^www\./, ''); } catch (_) {}
+            const snippet = w.snippet
+                ? `<div class="web-snippet">${escapeHtml(w.snippet.slice(0, 130))}…</div>`
+                : '';
+            sourcesHTML += `<li class="web-source-item">
+                <span class="source-icon">🌐</span>
+                <div class="web-source-body">
+                    <a href="${w.url}" target="_blank" rel="noopener" class="web-source-link">${escapeHtml(domain)}</a>
+                    ${snippet}
+                </div>
+            </li>`;
         });
+
         sourcesHTML += `</ul>`;
         if (tokensSaved) sourcesHTML += `<p class="toon-note">~${tokensSaved} token dihemat via TOON format.</p>`;
         sourcesHTML += `</div>`;
     }
+
 
     div.innerHTML = `
         <div class="avatar">NL</div>

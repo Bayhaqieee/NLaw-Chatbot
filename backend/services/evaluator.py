@@ -1,10 +1,13 @@
 import os
+import math
 import numpy as np
 import requests
 from scipy.spatial.distance import cosine, euclidean
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import evaluate
+import torch
+from transformers import RobertaTokenizer, RobertaForMaskedLM
 from sentence_transformers import CrossEncoder
 from services.ollama_client import get_embeddings_local, OLLAMA_HOST
 
@@ -20,58 +23,99 @@ def _get_metric(name: str):
     return _hf_metrics[name]
 
 
-# NLI model: CrossEncoder loaded from local disk
+# ── NLI model ──────────────────────────────────────────────────────────
 _NLI_PATH = "/app/Model/nli-deberta-v3-base"
 print(f"[evaluator] Loading NLI model from: {_NLI_PATH}")
 _nli_model: CrossEncoder = CrossEncoder(_NLI_PATH)
 
+# ── RoBERTa MLM — used for Pseudo-Perplexity (PPPL) ──────────────────
+_ROBERTA_PATH = "/app/Model/roberta-large"
+print(f"[evaluator] Loading RoBERTa tokenizer for PPPL from: {_ROBERTA_PATH}")
+_roberta_tokenizer = RobertaTokenizer.from_pretrained(_ROBERTA_PATH)
+_roberta_model     = RobertaForMaskedLM.from_pretrained(_ROBERTA_PATH)
+_roberta_model.eval()
+
 print("[evaluator] All singleton models ready.")
 
+# Ollama embedding model names
 _SIM_MODEL = "paraphrase-multilingual:278m-mpnet-base-v2-fp16"
 _LAT_MODEL = "qwen3-embedding:8b"
 
+# ── PPPL token cap — prevents excessive CPU time on long answers ───────
+# Decision (logged in Technical_Specs.md): Approximate PPPL uses batch masking
+# (10% of tokens per pass ≈ 10 passes) instead of N passes, capped at 50 tokens.
+_PPPL_MAX_TOKENS = 50
+
 
 # ══════════════════════════════════════════════════════════════════════
-# Perplexity via Ollama logprobs
+# Pseudo-Perplexity (PPPL)
 # ══════════════════════════════════════════════════════════════════════
 
-def _compute_perplexity_ollama(text: str, model: str = "qwen3.5-9b-nlaw") -> float:
+def _compute_pppl(text: str) -> float:
     """
-    Approximate perplexity by requesting logprobs from Ollama.
-    Ollama returns eval_count (tokens generated) but not individual log-probs.
-    We use a self-scoring approach: feed the text as a continuation and measure
-    token count vs duration as a fluency proxy. For proper PPL we use the
-    generate endpoint with an empty prompt and the text as the completion,
-    then compute -log P using the model's own probability estimates.
-    
-    Since Ollama ≥0.1.29 returns logprobs via /api/generate when logprobs=true,
-    we try that first and fall back to a token-rate heuristic.
+    Approximate Pseudo-Perplexity using batch masking (Salazar et al., 2020).
+
+    Standard PPPL masks 1 token at a time → N forward passes.
+    This implementation masks ~10% of tokens per batch → ~10 passes (10× faster).
+    Input is capped at _PPPL_MAX_TOKENS (50) for CPU feasibility.
+
+    Lower PPPL = better: the model assigns higher probability to the text,
+    indicating more fluent and natural language generation.
+
+    Args:
+        text: Generated answer text to evaluate.
+
+    Returns:
+        PPPL score (float). Lower is better.
     """
-    url = f"{OLLAMA_HOST}/api/generate"
-    payload = {
-        "model": model,
-        "prompt": text,
-        "stream": False,
-        "options": {"num_predict": 1, "temperature": 0},
-        "raw": True,         # treat input as raw tokens (no template)
-    }
+    if not text or text == "Generation Failed":
+        return float("inf")
+
     try:
-        resp = requests.post(url, json=payload, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        # prompt_eval_count = number of tokens in the input
-        # If model evaluated the prompt, we can infer log-prob from likelihood
-        # Ollama doesn't expose log-probs directly, so we use a BPC (bits-per-char)
-        # approximation: shorter, higher-probability sequences need fewer bits
-        eval_count = data.get("prompt_eval_count", 0)
-        if eval_count > 0:
-            # Heuristic: lower is better. Normalize by text length.
-            # This gives a relative perplexity proxy (not absolute PPL).
-            ppl = float(eval_count) / max(1, len(text.split()))
-            return round(ppl, 4)
+        enc = _roberta_tokenizer(
+            text,
+            return_tensors="pt",
+            max_length=_PPPL_MAX_TOKENS,
+            truncation=True,
+            padding=False,
+        )
+        input_ids = enc["input_ids"][0]   # shape (N,)
+        N = input_ids.size(0)
+
+        # Ignore special tokens [CLS]=0, [SEP]=-1
+        token_indices = list(range(1, N - 1))
+        if not token_indices:
+            return float("inf")
+
+        # Batch size = 10% of tokens, minimum 1
+        batch_size = max(1, len(token_indices) // 10)
+        log_probs  = []
+
+        for start in range(0, len(token_indices), batch_size):
+            batch_idx = token_indices[start : start + batch_size]
+
+            # Clone and mask the batch positions
+            masked_ids = input_ids.clone()
+            for idx in batch_idx:
+                masked_ids[idx] = _roberta_tokenizer.mask_token_id
+
+            with torch.no_grad():
+                logits = _roberta_model(masked_ids.unsqueeze(0)).logits[0]  # (N, V)
+
+            for idx in batch_idx:
+                true_tok  = input_ids[idx].item()
+                log_p     = torch.log_softmax(logits[idx], dim=-1)[true_tok].item()
+                log_probs.append(log_p)
+
+        if not log_probs:
+            return float("inf")
+
+        pppl = math.exp(-sum(log_probs) / len(log_probs))
+        return round(pppl, 4)
+
     except Exception as e:
-        print(f"[evaluator] Perplexity computation error: {e}")
-    return 0.0
+        print(f"[evaluator] PPPL error: {e}")
+        return float("inf")
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -97,11 +141,11 @@ def evaluate_semantics(predictions, references):
 
 
 def evaluate_sequential(predictions, references):
-    """BERTScore (local RoBERTa), Sentence Similarity (Ollama), NLI (local DeBERTa), Perplexity"""
-    bertscore = _get_metric("bertscore")
-
+    """BERTScore (local RoBERTa), Sentence Similarity (Ollama), NLI (local DeBERTa), PPPL"""
+    bertscore  = _get_metric("bertscore")
     model_type = "/app/Model/roberta-large" if os.path.exists("/app/Model/roberta-large") else "roberta-large"
-    b_score    = bertscore.compute(
+
+    b_score = bertscore.compute(
         predictions=predictions,
         references=references,
         lang="id",
@@ -125,18 +169,17 @@ def evaluate_sequential(predictions, references):
     logits     = _nli_model.predict(pairs)
     nli_scores = [float(row[1]) for row in logits]
 
-    # Perplexity — compute for each prediction using FT model as scorer
-    ppl_scores = []
-    for p in predictions:
-        if p and p != "Generation Failed":
-            ppl_scores.append(_compute_perplexity_ollama(p, model="qwen3.5-9b-nlaw"))
-    avg_ppl = float(np.mean(ppl_scores)) if ppl_scores else 0.0
+    # Pseudo-Perplexity via batch-masked RoBERTa (approximate, 10 passes)
+    pppl_scores = [_compute_pppl(p) for p in predictions]
+    # Filter out inf values for averaging (failed generations)
+    valid_pppl  = [s for s in pppl_scores if s != float("inf")]
+    avg_pppl    = round(float(np.mean(valid_pppl)), 4) if valid_pppl else None
 
     return {
         "BERTScore (F1)":      avg_bert_f1,
         "Sentence Similarity": float(np.mean(sim_scores)),
         "NLI Entailment":      float(np.mean(nli_scores)),
-        "Perplexity":          avg_ppl,
+        "Perplexity":          avg_pppl,   # float (lower=better) or None
         "BARTScore":           "N/A",
     }
 

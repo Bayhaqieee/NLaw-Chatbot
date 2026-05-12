@@ -104,14 +104,15 @@ function avg(results, path) {
 
 const METRICS_DEF = [
     // [label, pathVanilla, pathFinetuned, lowerIsBetter]
-    ['SacreBLEU',       'vanilla.metrics.Semantic.SacreBLEU',          'finetuned.metrics.Semantic.SacreBLEU',          false],
-    ['ROUGE-L',         'vanilla.metrics.Semantic.ROUGE-L',             'finetuned.metrics.Semantic.ROUGE-L',             false],
-    ['METEOR',          'vanilla.metrics.Semantic.METEOR',              'finetuned.metrics.Semantic.METEOR',              false],
-    ['BERTScore (F1)',  'vanilla.metrics.Sequential.BERTScore (F1)',    'finetuned.metrics.Sequential.BERTScore (F1)',    false],
-    ['Sent Sim',        'vanilla.metrics.Sequential.Sentence Similarity','finetuned.metrics.Sequential.Sentence Similarity',false],
-    ['NLI Entail',      'vanilla.metrics.Sequential.NLI Entailment',   'finetuned.metrics.Sequential.NLI Entailment',   false],
-    ['NLaw Score',      'vanilla.metrics.Latent.NLaw Score (Cosine)',   'finetuned.metrics.Latent.NLaw Score (Cosine)',   false],
-    ['L2 Dist',         'vanilla.metrics.Latent.L2 Latent Space',       'finetuned.metrics.Latent.L2 Latent Space',       true],
+    ['SacreBLEU', 'vanilla.metrics.Semantic.SacreBLEU', 'finetuned.metrics.Semantic.SacreBLEU', false],
+    ['ROUGE-L', 'vanilla.metrics.Semantic.ROUGE-L', 'finetuned.metrics.Semantic.ROUGE-L', false],
+    ['METEOR', 'vanilla.metrics.Semantic.METEOR', 'finetuned.metrics.Semantic.METEOR', false],
+    ['BERTScore (F1)', 'vanilla.metrics.Sequential.BERTScore (F1)', 'finetuned.metrics.Sequential.BERTScore (F1)', false],
+    ['Sent Sim', 'vanilla.metrics.Sequential.Sentence Similarity', 'finetuned.metrics.Sequential.Sentence Similarity', false],
+    ['NLI Entail', 'vanilla.metrics.Sequential.NLI Entailment', 'finetuned.metrics.Sequential.NLI Entailment', false],
+    ['Perplexity ↓', 'vanilla.metrics.Sequential.Perplexity', 'finetuned.metrics.Sequential.Perplexity', true],
+    ['NLaw Score', 'vanilla.metrics.Latent.NLaw Score (Cosine)', 'finetuned.metrics.Latent.NLaw Score (Cosine)', false],
+    ['L2 Dist', 'vanilla.metrics.Latent.L2 Latent Space', 'finetuned.metrics.Latent.L2 Latent Space', true],
 ];
 
 function renderSummary(results, serverTime, clientTime) {
@@ -171,6 +172,7 @@ function renderSummary(results, serverTime, clientTime) {
 
 function fmt(v) {
     if (v === 'N/A' || v === null || v === undefined) return 'N/A';
+    if (v === Infinity || v === 'Infinity') return '∞';
     if (typeof v === 'number') return v.toFixed(4);
     return String(v);
 }
@@ -212,19 +214,19 @@ function renderResults(results) {
                 <div class="layer-label">Semantic</div>
                 <div class="metrics-grid">
                     ${metricCell('SacreBLEU', vm.Semantic?.SacreBLEU, fm.Semantic?.SacreBLEU)}
-                    ${metricCell('ROUGE-L',   vm.Semantic?.['ROUGE-L'], fm.Semantic?.['ROUGE-L'])}
-                    ${metricCell('METEOR',    vm.Semantic?.METEOR,  fm.Semantic?.METEOR)}
+                    ${metricCell('ROUGE-L', vm.Semantic?.['ROUGE-L'], fm.Semantic?.['ROUGE-L'])}
+                    ${metricCell('METEOR', vm.Semantic?.METEOR, fm.Semantic?.METEOR)}
                 </div>
                 <div class="layer-label">Sequential</div>
                 <div class="metrics-grid">
                     ${metricCell('BERTScore', vm.Sequential?.['BERTScore (F1)'], fm.Sequential?.['BERTScore (F1)'])}
-                    ${metricCell('Sent Sim',  vm.Sequential?.['Sentence Similarity'], fm.Sequential?.['Sentence Similarity'])}
-                    ${metricCell('NLI Entail',vm.Sequential?.['NLI Entailment'], fm.Sequential?.['NLI Entailment'])}
+                    ${metricCell('Sent Sim', vm.Sequential?.['Sentence Similarity'], fm.Sequential?.['Sentence Similarity'])}
+                    ${metricCell('NLI Entail', vm.Sequential?.['NLI Entailment'], fm.Sequential?.['NLI Entailment'])}
                 </div>
                 <div class="layer-label">Latent Space</div>
                 <div class="metrics-grid two">
                     ${metricCell('NLaw Score', vm.Latent?.['NLaw Score (Cosine)'], fm.Latent?.['NLaw Score (Cosine)'])}
-                    ${metricCell('L2 Dist',    vm.Latent?.['L2 Latent Space'],     fm.Latent?.['L2 Latent Space'], true)}
+                    ${metricCell('L2 Dist', vm.Latent?.['L2 Latent Space'], fm.Latent?.['L2 Latent Space'], true)}
                 </div>
             </div>
 
@@ -235,19 +237,19 @@ function renderResults(results) {
                 <div class="layer-label">Semantic</div>
                 <div class="metrics-grid">
                     ${metricCell('SacreBLEU', fm.Semantic?.SacreBLEU, vm.Semantic?.SacreBLEU)}
-                    ${metricCell('ROUGE-L',   fm.Semantic?.['ROUGE-L'], vm.Semantic?.['ROUGE-L'])}
-                    ${metricCell('METEOR',    fm.Semantic?.METEOR,  vm.Semantic?.METEOR)}
+                    ${metricCell('ROUGE-L', fm.Semantic?.['ROUGE-L'], vm.Semantic?.['ROUGE-L'])}
+                    ${metricCell('METEOR', fm.Semantic?.METEOR, vm.Semantic?.METEOR)}
                 </div>
                 <div class="layer-label">Sequential</div>
                 <div class="metrics-grid">
                     ${metricCell('BERTScore', fm.Sequential?.['BERTScore (F1)'], vm.Sequential?.['BERTScore (F1)'])}
-                    ${metricCell('Sent Sim',  fm.Sequential?.['Sentence Similarity'], vm.Sequential?.['Sentence Similarity'])}
-                    ${metricCell('NLI Entail',fm.Sequential?.['NLI Entailment'], vm.Sequential?.['NLI Entailment'])}
+                    ${metricCell('Sent Sim', fm.Sequential?.['Sentence Similarity'], vm.Sequential?.['Sentence Similarity'])}
+                    ${metricCell('NLI Entail', fm.Sequential?.['NLI Entailment'], vm.Sequential?.['NLI Entailment'])}
                 </div>
                 <div class="layer-label">Latent Space</div>
                 <div class="metrics-grid two">
                     ${metricCell('NLaw Score', fm.Latent?.['NLaw Score (Cosine)'], vm.Latent?.['NLaw Score (Cosine)'])}
-                    ${metricCell('L2 Dist',    fm.Latent?.['L2 Latent Space'],     vm.Latent?.['L2 Latent Space'], true)}
+                    ${metricCell('L2 Dist', fm.Latent?.['L2 Latent Space'], vm.Latent?.['L2 Latent Space'], true)}
                 </div>
             </div>
         </div>
@@ -301,15 +303,15 @@ function makeScatterData(pca) {
     if (!pca) return null;
     return {
         datasets: [
-            { label: 'Vanilla',       data: [{ x: pca.vanilla[0],       y: pca.vanilla[1]       }], backgroundColor: '#94a3b8', pointRadius: 11, pointHoverRadius: 14 },
-            { label: 'Fine-Tuned',    data: [{ x: pca.finetuned[0],     y: pca.finetuned[1]     }], backgroundColor: '#c9a227', pointRadius: 11, pointHoverRadius: 14 },
-            { label: 'Ground Truth',  data: [{ x: pca.ground_truth[0],  y: pca.ground_truth[1]  }], backgroundColor: '#22c55e', pointRadius: 11, pointHoverRadius: 14, pointStyle: 'rect' },
+            { label: 'Vanilla', data: [{ x: pca.vanilla[0], y: pca.vanilla[1] }], backgroundColor: '#94a3b8', pointRadius: 11, pointHoverRadius: 14 },
+            { label: 'Fine-Tuned', data: [{ x: pca.finetuned[0], y: pca.finetuned[1] }], backgroundColor: '#c9a227', pointRadius: 11, pointHoverRadius: 14 },
+            { label: 'Ground Truth', data: [{ x: pca.ground_truth[0], y: pca.ground_truth[1] }], backgroundColor: '#22c55e', pointRadius: 11, pointHoverRadius: 14, pointStyle: 'rect' },
         ]
     };
 }
 
 function renderPerQuestionCharts(viz, pcaId, tsneId, qNum) {
-    const pcaData  = makeScatterData(viz.PCA);
+    const pcaData = makeScatterData(viz.PCA);
     const tsneData = makeScatterData(viz.tSNE);
 
     if (pcaData) {
@@ -344,8 +346,8 @@ function escHtml(str) {
 // ══════════════════════════════════════════════════════════════════════
 
 const Q_COLORS = [
-    '#e07b54','#54aae0','#7be07b','#e0c554','#c554e0',
-    '#54e0c5','#e05484','#8454e0','#e0a854','#54e084',
+    '#e07b54', '#54aae0', '#7be07b', '#e0c554', '#c554e0',
+    '#54e0c5', '#e05484', '#8454e0', '#e0a854', '#54e084',
 ];
 
 function _buildGlobalDatasets(points, coordKey) {
@@ -360,13 +362,13 @@ function _buildGlobalDatasets(points, coordKey) {
     const datasets = [];
     Object.keys(byQ).sort((a, b) => +a - +b).forEach(q => {
         const color = Q_COLORS[(+q - 1) % Q_COLORS.length];
-        const pts   = byQ[q];
+        const pts = byQ[q];
         if (pts.vanilla)
             datasets.push({
                 label: `Q${q} Vanilla`,
                 data: [{ x: pts.vanilla[0], y: pts.vanilla[1] }],
                 backgroundColor: color + 'aa',
-                borderColor:     color,
+                borderColor: color,
                 pointStyle: 'circle',
                 pointRadius: 10,
                 pointHoverRadius: 13,
@@ -376,7 +378,7 @@ function _buildGlobalDatasets(points, coordKey) {
                 label: `Q${q} Fine-Tuned`,
                 data: [{ x: pts.finetuned[0], y: pts.finetuned[1] }],
                 backgroundColor: color,
-                borderColor:     color,
+                borderColor: color,
                 pointStyle: 'triangle',
                 pointRadius: 11,
                 pointHoverRadius: 14,
@@ -386,7 +388,7 @@ function _buildGlobalDatasets(points, coordKey) {
                 label: `Q${q} GT`,
                 data: [{ x: pts.ground_truth[0], y: pts.ground_truth[1] }],
                 backgroundColor: color + '66',
-                borderColor:     color,
+                borderColor: color,
                 pointStyle: 'rect',
                 pointRadius: 9,
                 pointHoverRadius: 12,
@@ -397,14 +399,14 @@ function _buildGlobalDatasets(points, coordKey) {
 
 function renderGlobalViz(globalViz) {
     const container = document.getElementById('resultsContainer');
-    const points    = globalViz.points || [];
+    const points = globalViz.points || [];
     if (!points.length) return;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'global-viz-card';
     wrapper.innerHTML = `
     <div class="global-viz-header">
-        <div class="global-viz-title">🌐 Kompilasi Latent Space — Semua Pertanyaan</div>
+        <div class="global-viz-title">Kompilasi Latent Space — Semua Pertanyaan</div>
         <div class="global-viz-sub">
             Seluruh embedding diprojeksikan ke ruang koordinat bersama (shared PCA/t-SNE).
             ○ Lingkaran = Vanilla &nbsp; △ Segitiga = Fine-Tuned &nbsp; □ Persegi = Ground Truth
@@ -437,7 +439,7 @@ function renderGlobalViz(globalViz) {
         }
     });
 
-    const pcaData  = _buildGlobalDatasets(points, 'pca');
+    const pcaData = _buildGlobalDatasets(points, 'pca');
     const tsneData = _buildGlobalDatasets(points, 'tsne');
 
     const cPCA = new Chart(document.getElementById('chart-global-pca').getContext('2d'), {
@@ -446,6 +448,6 @@ function renderGlobalViz(globalViz) {
     const cTSNE = new Chart(document.getElementById('chart-global-tsne').getContext('2d'), {
         type: 'scatter', data: { datasets: tsneData }, options: sharedOpts('t-SNE Global — Semua Pertanyaan')
     });
-    _charts['chart-global-pca']  = cPCA;
+    _charts['chart-global-pca'] = cPCA;
     _charts['chart-global-tsne'] = cTSNE;
 }

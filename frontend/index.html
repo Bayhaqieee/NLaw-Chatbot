@@ -5,15 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="NusantaraLaw - Asisten Hukum AI berbasis RAG untuk hukum Indonesia">
     <title>NusantaraLaw | Asisten Hukum AI</title>
-    <link rel="stylesheet" href="style.css?v=4">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@600;700;800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- ══ Background Orbs ══════════════════════════════ -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ══ Splash / Login Screen ════════════════════════ -->
+<div id="splashScreen" class="splash-screen">
+    <div class="splash-content">
+        <div class="splash-logo">NL</div>
+        <h1 class="splash-title">NusantaraLaw</h1>
+        <p class="splash-subtitle">Legal AI Assistant · RAG · Indonesia</p>
+        <p class="splash-prompt">✦ Tekan sembarang tombol atau klik untuk masuk ✦</p>
+        <div class="splash-dots">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</div>
+
+<!-- ══ App ════════════════════════════════════════ -->
 <div class="app-container">
 
     <!-- ══ Sidebar ══════════════════════════════ -->
     <aside class="sidebar">
-
         <div class="sidebar-brand">
             <div class="brand-row">
                 <div class="brand-icon">NL</div>
@@ -94,12 +113,10 @@
         <div class="sidebar-footer">
             Ditenagai oleh Qwen 3.5 &middot; Milvus &middot; SearXNG
         </div>
-
     </aside>
 
     <!-- ══ Chat ════════════════════════════════ -->
     <main class="chat-area">
-
         <header class="chat-header">
             <div class="chat-header-left">
                 <h1>Asisten Hukum AI</h1>
@@ -123,10 +140,10 @@
                 <button type="submit" id="sendBtn" class="btn primary">Kirim</button>
             </form>
         </div>
-
     </main>
 
 </div>
-<script src="app.js?v=4"></script>
+
+<script src="app.js?v=5"></script>
 </body>
 </html>

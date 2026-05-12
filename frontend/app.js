@@ -1,5 +1,18 @@
 const API_BASE_URL = "http://localhost:8000/api";
 
+// ── Splash Screen — dismiss on click or any key ───────────────────────────
+(function initSplash() {
+    const splash = document.getElementById("splashScreen");
+    if (!splash) return;
+    function dismiss() {
+        splash.classList.add("hidden");
+        splash.addEventListener("transitionend", () => splash.remove(), { once: true });
+    }
+    splash.addEventListener("click", dismiss);
+    document.addEventListener("keydown", dismiss, { once: true });
+})();
+
+
 const chatForm        = document.getElementById("chatForm");
 const questionInput   = document.getElementById("questionInput");
 const sendBtn         = document.getElementById("sendBtn");

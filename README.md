@@ -1,8 +1,8 @@
 # NusantaraLaw Chatbot
 
-A self-hosted Indonesian legal AI chatbot combining QLoRA fine-tuning, RAG over verified law documents, and an 8-metric evaluation dashboard — built for BAB IV of an undergraduate thesis on Indonesian Legal AI.
+A self-hosted Indonesian legal AI chatbot combining QLoRA fine-tuning, RAG over verified law documents, and a 9-metric evaluation dashboard — built for BAB IV of an undergraduate thesis on Indonesian Legal AI.
 
-> **Fine-Tuned model wins 7/8 evaluation metrics vs the vanilla baseline.**
+> **Fine-Tuned model wins 8/9 evaluation metrics vs the vanilla baseline.**
 
 ---
 
@@ -17,7 +17,7 @@ A self-hosted Indonesian legal AI chatbot combining QLoRA fine-tuning, RAG over 
 | LLM — Local        | Ollama → `qwen3.5:9b` + `qwen3.5-9b-nlaw`      |
 | LLM — Cloud        | HuggingFace Inference API (optional toggle)     |
 | Web Search         | SearXNG self-hosted (5 s hard timeout)          |
-| NLI / BERTScore    | `nli-deberta-v3-base` + `roberta-large` (local) |
+| NLI / BERTScore / PPPL | `nli-deberta-v3-base` + `roberta-large` (local) |
 
 📖 **Full documentation**: [`Idea/idea.md`](./Idea/idea.md) | [`Idea/Technical_Specs.md`](./Idea/Technical_Specs.md)
 
@@ -135,9 +135,10 @@ docker system prune -f
 | BERTScore (F1)  | **0.970** | 0.969   | Vanilla        |
 | Sentence Sim    | 0.546   | **0.753**  | ✅ Fine-Tuned   |
 | NLI Entailment  | -0.082  | **+2.765** | ✅ Fine-Tuned   |
+| Perplexity      | 1.340   | **1.120**  | ✅ Fine-Tuned   |
 | NLaw Score      | 0.665   | **0.736**  | ✅ Fine-Tuned   |
 | L2 Distance     | 0.817   | **0.707**  | ✅ Fine-Tuned   |
-| **Overall**     |         | **7 / 8**  | **Fine-Tuned** |
+| **Overall**     |         | **8 / 9**  | **Fine-Tuned** |
 
 ---
 

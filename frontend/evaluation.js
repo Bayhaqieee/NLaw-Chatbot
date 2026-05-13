@@ -110,7 +110,7 @@ const METRICS_DEF = [
     ['BERTScore (F1)', 'vanilla.metrics.Sequential.BERTScore (F1)', 'finetuned.metrics.Sequential.BERTScore (F1)', false],
     ['Sent Sim', 'vanilla.metrics.Sequential.Sentence Similarity', 'finetuned.metrics.Sequential.Sentence Similarity', false],
     ['NLI Entail', 'vanilla.metrics.Sequential.NLI Entailment', 'finetuned.metrics.Sequential.NLI Entailment', false],
-    ['Perplexity ↓', 'vanilla.metrics.Sequential.Perplexity', 'finetuned.metrics.Sequential.Perplexity', true],
+    ['Perplexity', 'vanilla.metrics.Sequential.Perplexity', 'finetuned.metrics.Sequential.Perplexity', true],
     ['NLaw Score', 'vanilla.metrics.Latent.NLaw Score (Cosine)', 'finetuned.metrics.Latent.NLaw Score (Cosine)', false],
     ['L2 Dist', 'vanilla.metrics.Latent.L2 Latent Space', 'finetuned.metrics.Latent.L2 Latent Space', true],
 ];
@@ -218,10 +218,11 @@ function renderResults(results) {
                     ${metricCell('METEOR', vm.Semantic?.METEOR, fm.Semantic?.METEOR)}
                 </div>
                 <div class="layer-label">Sequential</div>
-                <div class="metrics-grid">
+                <div class="metrics-grid two">
                     ${metricCell('BERTScore', vm.Sequential?.['BERTScore (F1)'], fm.Sequential?.['BERTScore (F1)'])}
                     ${metricCell('Sent Sim', vm.Sequential?.['Sentence Similarity'], fm.Sequential?.['Sentence Similarity'])}
                     ${metricCell('NLI Entail', vm.Sequential?.['NLI Entailment'], fm.Sequential?.['NLI Entailment'])}
+                    ${metricCell('Perplexity', vm.Sequential?.Perplexity, fm.Sequential?.Perplexity, true)}
                 </div>
                 <div class="layer-label">Latent Space</div>
                 <div class="metrics-grid two">
@@ -241,10 +242,11 @@ function renderResults(results) {
                     ${metricCell('METEOR', fm.Semantic?.METEOR, vm.Semantic?.METEOR)}
                 </div>
                 <div class="layer-label">Sequential</div>
-                <div class="metrics-grid">
+                <div class="metrics-grid two">
                     ${metricCell('BERTScore', fm.Sequential?.['BERTScore (F1)'], vm.Sequential?.['BERTScore (F1)'])}
                     ${metricCell('Sent Sim', fm.Sequential?.['Sentence Similarity'], vm.Sequential?.['Sentence Similarity'])}
                     ${metricCell('NLI Entail', fm.Sequential?.['NLI Entailment'], vm.Sequential?.['NLI Entailment'])}
+                    ${metricCell('Perplexity', fm.Sequential?.Perplexity, vm.Sequential?.Perplexity, true)}
                 </div>
                 <div class="layer-label">Latent Space</div>
                 <div class="metrics-grid two">

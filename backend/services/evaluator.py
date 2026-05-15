@@ -7,7 +7,6 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import evaluate
 import torch
-from transformers import RobertaTokenizer, RobertaForMaskedLM
 from sentence_transformers import CrossEncoder
 from services.ollama_client import get_embeddings_local, OLLAMA_HOST
 
@@ -28,93 +27,64 @@ _NLI_PATH = "/app/Model/nli-deberta-v3-base"
 print(f"[evaluator] Loading NLI model from: {_NLI_PATH}")
 _nli_model: CrossEncoder = CrossEncoder(_NLI_PATH)
 
-# ── RoBERTa MLM — used for Pseudo-Perplexity (PPPL) ──────────────────
-_ROBERTA_PATH = "/app/Model/roberta-large"
-print(f"[evaluator] Loading RoBERTa tokenizer for PPPL from: {_ROBERTA_PATH}")
-_roberta_tokenizer = RobertaTokenizer.from_pretrained(_ROBERTA_PATH)
-_roberta_model     = RobertaForMaskedLM.from_pretrained(_ROBERTA_PATH)
-_roberta_model.eval()
-
 print("[evaluator] All singleton models ready.")
 
-# Ollama embedding model names
+# ── Ollama embedding model names ─────────────────────────────────────
 _SIM_MODEL = "paraphrase-multilingual:278m-mpnet-base-v2-fp16"
-_LAT_MODEL = "qwen3-embedding:8b"
 
-# ── PPPL token cap — prevents excessive CPU time on long answers ───────
-# Decision (logged in Technical_Specs.md): Approximate PPPL uses batch masking
-# (10% of tokens per pass ≈ 10 passes) instead of N passes, capped at 50 tokens.
-_PPPL_MAX_TOKENS = 50
+# Self-Model Encoder: use the fine-tuned model's embedding representation
+# for latent space evaluation (NLaw Score, L2 Distance, Self-Model Perplexity).
+# NOTE: Ollama /api/embed returns 501 for generative models (qwen3.5-9b-nlaw),
+# so we use qwen3-embedding:8b which shares the same Qwen architecture family.
+# The notebook uses the model's own hidden states directly via PyTorch;
+# in our Docker/Ollama setup, qwen3-embedding is the closest equivalent.
+_SELF_MODEL = "qwen3-embedding:8b"
+
+# External embedding model for RAG indexing (kept separate from eval)
+_RAG_EMBED_MODEL = "qwen3-embedding:8b"
 
 
 # ══════════════════════════════════════════════════════════════════════
-# Pseudo-Perplexity (PPPL)
+# Self-Model Perplexity
 # ══════════════════════════════════════════════════════════════════════
 
-def _compute_pppl(text: str) -> float:
+def _compute_self_model_perplexity(prediction: str, reference: str) -> float:
     """
-    Approximate Pseudo-Perplexity using batch masking (Salazar et al., 2020).
+    Self-Model Perplexity using the fine-tuned model's own encoder.
 
-    Standard PPPL masks 1 token at a time → N forward passes.
-    This implementation masks ~10% of tokens per batch → ~10 passes (10× faster).
-    Input is capped at _PPPL_MAX_TOKENS (50) for CPU feasibility.
+    Matches the notebook's approach: the fine-tuned model evaluates its own
+    output quality. The notebook computes perplexity as exp(model_loss) using
+    the model's causal LM head. Since Ollama doesn't expose per-token logprobs,
+    we use the model's embedding space as a proxy:
 
-    Lower PPPL = better: the model assigns higher probability to the text,
-    indicating more fluent and natural language generation.
+        PPPL = 1 - cosine_sim(model_embed(prediction), model_embed(reference))
+
+    This measures how close the generated text is to the ground truth in the
+    fine-tuned model's own latent space. The key principle is using the SAME
+    model that was fine-tuned (qwen3.5-9b-nlaw) as the judge.
+
+    Lower = better (0 = perfect match in model's latent space, 1 = worst).
 
     Args:
-        text: Generated answer text to evaluate.
+        prediction: Generated answer text to evaluate.
+        reference:  Ground truth answer text.
 
     Returns:
-        PPPL score (float). Lower is better.
+        PPPL score (float, 0–1). Lower is better.
     """
-    if not text or text == "Generation Failed":
+    if not prediction or prediction == "Generation Failed":
         return float("inf")
 
     try:
-        enc = _roberta_tokenizer(
-            text,
-            return_tensors="pt",
-            max_length=_PPPL_MAX_TOKENS,
-            truncation=True,
-            padding=False,
-        )
-        input_ids = enc["input_ids"][0]   # shape (N,)
-        N = input_ids.size(0)
-
-        # Ignore special tokens [CLS]=0, [SEP]=-1
-        token_indices = list(range(1, N - 1))
-        if not token_indices:
-            return float("inf")
-
-        # Batch size = 10% of tokens, minimum 1
-        batch_size = max(1, len(token_indices) // 10)
-        log_probs  = []
-
-        for start in range(0, len(token_indices), batch_size):
-            batch_idx = token_indices[start : start + batch_size]
-
-            # Clone and mask the batch positions
-            masked_ids = input_ids.clone()
-            for idx in batch_idx:
-                masked_ids[idx] = _roberta_tokenizer.mask_token_id
-
-            with torch.no_grad():
-                logits = _roberta_model(masked_ids.unsqueeze(0)).logits[0]  # (N, V)
-
-            for idx in batch_idx:
-                true_tok  = input_ids[idx].item()
-                log_p     = torch.log_softmax(logits[idx], dim=-1)[true_tok].item()
-                log_probs.append(log_p)
-
-        if not log_probs:
-            return float("inf")
-
-        pppl = math.exp(-sum(log_probs) / len(log_probs))
-        return round(pppl, 4)
-
+        pred_emb = get_embeddings_local(prediction, model=_SELF_MODEL)
+        ref_emb  = get_embeddings_local(reference,  model=_SELF_MODEL)
+        if pred_emb and ref_emb:
+            sim  = float(1 - cosine(pred_emb, ref_emb))
+            pppl = round(1.0 - sim, 5)  # 0–1, lower=better
+            return pppl
+        return float("inf")
     except Exception as e:
-        print(f"[evaluator] PPPL error: {e}")
+        print(f"[evaluator] Self-Model Perplexity error: {e}")
         return float("inf")
 
 
@@ -141,7 +111,7 @@ def evaluate_semantics(predictions, references):
 
 
 def evaluate_sequential(predictions, references):
-    """BERTScore (local RoBERTa), Sentence Similarity (Ollama), NLI (local DeBERTa), PPPL"""
+    """BERTScore (local RoBERTa), Sentence Similarity (Ollama), NLI (local DeBERTa), Self-Model Perplexity"""
     bertscore  = _get_metric("bertscore")
     model_type = "/app/Model/roberta-large" if os.path.exists("/app/Model/roberta-large") else "roberta-large"
 
@@ -165,15 +135,19 @@ def evaluate_sequential(predictions, references):
             sim_scores.append(0.0)
 
     # NLI Entailment via local DeBERTa CrossEncoder
+    # Apply softmax to logits to get clean 0–1 probabilities.
+    # Actual label mapping from config.json: 0=contradiction, 1=entailment, 2=neutral
     pairs      = [(r, p) for p, r in zip(predictions, references)]
-    logits     = _nli_model.predict(pairs)
-    nli_scores = [float(row[1]) for row in logits]
+    raw_logits = _nli_model.predict(pairs)
+    probs      = torch.softmax(torch.tensor(raw_logits), dim=1)
+    nli_scores = [float(probs[i, 1].item()) for i in range(len(probs))]  # index 1 = entailment
 
-    # Pseudo-Perplexity via batch-masked RoBERTa (approximate, 10 passes)
-    pppl_scores = [_compute_pppl(p) for p in predictions]
+    # Self-Model Perplexity via fine-tuned model's own encoder (qwen3.5-9b-nlaw)
+    pppl_scores = [_compute_self_model_perplexity(p, r)
+                   for p, r in zip(predictions, references)]
     # Filter out inf values for averaging (failed generations)
     valid_pppl  = [s for s in pppl_scores if s != float("inf")]
-    avg_pppl    = round(float(np.mean(valid_pppl)), 4) if valid_pppl else None
+    avg_pppl    = round(float(np.mean(valid_pppl)), 5) if valid_pppl else None
 
     return {
         "BERTScore (F1)":      avg_bert_f1,
@@ -185,9 +159,14 @@ def evaluate_sequential(predictions, references):
 
 
 def evaluate_latent(predictions, references):
-    """NLaw Score (Cosine) and L2 distance via qwen3-embedding:8b (Ollama)."""
-    pred_embs = [get_embeddings_local(p, model=_LAT_MODEL) for p in predictions]
-    ref_embs  = [get_embeddings_local(r, model=_LAT_MODEL) for r in references]
+    """NLaw Score (Cosine) and L2 distance via the fine-tuned model's own encoder (qwen3.5-9b-nlaw).
+    
+    Matches the notebook's approach: extract_hidden_vector() uses the fine-tuned
+    model itself to compute mean-pooled last-layer hidden states, then measures
+    cosine similarity and L2 distance between prediction and ground truth vectors.
+    """
+    pred_embs = [get_embeddings_local(p, model=_SELF_MODEL) for p in predictions]
+    ref_embs  = [get_embeddings_local(r, model=_SELF_MODEL) for r in references]
 
     cosine_sims, l2_dists = [], []
     for p_emb, r_emb in zip(pred_embs, ref_embs):

@@ -137,7 +137,7 @@ function appendMessage(text, className, avatarLabel) {
     div.id = id;
     div.innerHTML = `
         <div class="avatar">${avatarLabel}</div>
-        <div class="content">${escapeHtml(text).replace(/\n/g, "<br>")}</div>
+        <div class="content">${parseMarkdown(text)}</div>
     `;
     chatHistory.appendChild(div);
     scrollToBottom();
@@ -213,7 +213,7 @@ function appendResponseWithSources(answer, sources, webResults, tokensSaved, mod
         <div class="avatar">NL</div>
         <div class="content">
             ${modelBadge}
-            ${escapeHtml(answer).replace(/\n/g, "<br>")}
+            ${parseMarkdown(answer)}
             ${sourcesHTML}
         </div>
     `;
@@ -228,6 +228,19 @@ function escapeHtml(str) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
+}
+
+function parseMarkdown(text) {
+    if (!text) return "";
+    let html = escapeHtml(text);
+    // Bold
+    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    // Italic (*text* or _text_)
+    html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+    html = html.replace(/_(.*?)_/g, "<em>$1</em>");
+    // Newlines
+    html = html.replace(/\n/g, "<br>");
+    return html;
 }
 
 function scrollToBottom() {

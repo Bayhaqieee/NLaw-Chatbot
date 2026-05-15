@@ -130,11 +130,12 @@ function renderSummary(results, serverTime, clientTime) {
             fClass = !vWins ? 'winner' : '';
             if (vWins) vanillaWins++; else ftWins++;
         }
+        const isPPPL = label === 'Perplexity';
         return `
         <tr>
             <td class="metric-row-label">${label}</td>
-            <td class="metric-row-val ${vClass}">${vAvg !== null ? vAvg.toFixed(4) : 'N/A'}</td>
-            <td class="metric-row-val ${fClass}">${fAvg !== null ? fAvg.toFixed(4) : 'N/A'}</td>
+            <td class="metric-row-val ${vClass}">${vAvg !== null ? fmt(vAvg, isPPPL) : 'N/A'}</td>
+            <td class="metric-row-val ${fClass}">${fAvg !== null ? fmt(fAvg, isPPPL) : 'N/A'}</td>
         </tr>`;
     }).join('');
 
@@ -170,10 +171,10 @@ function renderSummary(results, serverTime, clientTime) {
 // RESULT CARDS
 // ══════════════════════════════════════════════════════════════════════
 
-function fmt(v) {
+function fmt(v, isPPPL = false) {
     if (v === 'N/A' || v === null || v === undefined) return 'N/A';
     if (v === Infinity || v === 'Infinity') return '∞';
-    if (typeof v === 'number') return v.toFixed(4);
+    if (typeof v === 'number') return isPPPL ? v.toFixed(5) : v.toFixed(4);
     return String(v);
 }
 
@@ -278,9 +279,10 @@ function renderResults(results) {
 
 function metricCell(label, ownVal, otherVal, lowerBetter = false) {
     const cls = winClass(ownVal, otherVal, lowerBetter);
+    const isPPPL = label === 'Perplexity';
     return `<div class="metric-cell ${cls}">
         <div class="metric-lbl">${label}</div>
-        <div class="metric-val">${fmt(ownVal)}</div>
+        <div class="metric-val">${fmt(ownVal, isPPPL)}</div>
     </div>`;
 }
 
@@ -407,12 +409,16 @@ function renderGlobalViz(globalViz) {
     const wrapper = document.createElement('div');
     wrapper.className = 'global-viz-card';
     wrapper.innerHTML = `
-    <div class="global-viz-header">
-        <div class="global-viz-title">Kompilasi Latent Space — Semua Pertanyaan</div>
-        <div class="global-viz-sub">
-            Seluruh embedding diprojeksikan ke ruang koordinat bersama (shared PCA/t-SNE).
-            ○ Lingkaran = Vanilla &nbsp; △ Segitiga = Fine-Tuned &nbsp; □ Persegi = Ground Truth
+    <div class="global-viz-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap: 10px;">
+        <div>
+            <div class="global-viz-title">Kompilasi Latent Space</div>
+            <div class="global-viz-sub">
+                ○ Lingkaran = Vanilla &nbsp; △ Segitiga = Fine-Tuned &nbsp; □ Persegi = Ground Truth
+            </div>
         </div>
+        <select id="globalVizFilter" style="background:var(--s2); border:1px solid var(--b1); color:var(--t2); padding:6px 12px; border-radius:var(--rs); font-size:11.5px; outline:none; cursor:pointer;">
+            <option value="all">Semua Pertanyaan</option>
+        </select>
     </div>
     <div class="global-viz-charts">
         <div class="chart-wrap"><canvas id="chart-global-pca"></canvas></div>
@@ -424,10 +430,7 @@ function renderGlobalViz(globalViz) {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: {
-                display: true,
-                labels: { color: '#8fa3c0', font: { family: 'Inter', size: 9 }, padding: 6, boxWidth: 10 }
-            },
+            legend: { display: false },
             title: { display: true, text: title, color: '#c9a227', font: { size: 12, family: 'Inter', weight: 700 } },
             tooltip: {
                 callbacks: {
@@ -452,4 +455,28 @@ function renderGlobalViz(globalViz) {
     });
     _charts['chart-global-pca'] = cPCA;
     _charts['chart-global-tsne'] = cTSNE;
+
+    // Populate dropdown
+    const filterSelect = document.getElementById('globalVizFilter');
+    const uniqueQs = [...new Set(points.map(p => p.q))].sort((a, b) => +a - +b);
+    uniqueQs.forEach(q => {
+        const opt = document.createElement('option');
+        opt.value = q;
+        opt.textContent = `Test Case #${q}`;
+        filterSelect.appendChild(opt);
+    });
+
+    filterSelect.addEventListener('change', (e) => {
+        const selected = e.target.value;
+        [cPCA, cTSNE].forEach(chart => {
+            chart.data.datasets.forEach(ds => {
+                if (selected === 'all') {
+                    ds.hidden = false;
+                } else {
+                    ds.hidden = !ds.label.startsWith(`Q${selected} `);
+                }
+            });
+            chart.update();
+        });
+    });
 }

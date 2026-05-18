@@ -12,6 +12,27 @@ const API_BASE_URL = "http://localhost:8000/api";
     document.addEventListener("keydown", dismiss, { once: true });
 })();
 
+// ── Theme Management ──────────────────────────────────────────────────────
+const themeToggle = document.getElementById("themeToggle");
+if (themeToggle) {
+    // Load preference
+    const isDark = localStorage.getItem("theme") === "dark";
+    if (isDark) {
+        document.documentElement.setAttribute("data-theme", "dark");
+        themeToggle.checked = true;
+    }
+
+    themeToggle.addEventListener("change", (e) => {
+        if (e.target.checked) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            localStorage.setItem("theme", "dark");
+        } else {
+            document.documentElement.removeAttribute("data-theme");
+            localStorage.setItem("theme", "light");
+        }
+    });
+}
+
 
 const chatForm        = document.getElementById("chatForm");
 const questionInput   = document.getElementById("questionInput");

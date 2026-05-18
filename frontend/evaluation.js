@@ -13,6 +13,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('testCasesList').innerHTML =
             `<div style="padding:20px;color:var(--red);text-align:center;font-size:12px;">Gagal memuat data. Pastikan backend berjalan.</div>`;
     }
+
+    // ── Theme Management ──────────────────────────────────────────────────────
+    const themeToggle = document.getElementById("themeToggle");
+    if (themeToggle) {
+        const isDark = localStorage.getItem("theme") === "dark";
+        if (isDark) {
+            document.documentElement.setAttribute("data-theme", "dark");
+            themeToggle.checked = true;
+        }
+        themeToggle.addEventListener("change", (e) => {
+            if (e.target.checked) {
+                document.documentElement.setAttribute("data-theme", "dark");
+                localStorage.setItem("theme", "dark");
+            } else {
+                document.documentElement.removeAttribute("data-theme");
+                localStorage.setItem("theme", "light");
+            }
+            // Trigger Chart.js re-render logic if colors depend on theme
+            // (Currently relying on CSS variables but Chart.js usually needs explicit updates. We'll leave it as is, standard refresh fixes it)
+        });
+    }
 });
 
 // ── Render sidebar list ────────────────────────────────────────────

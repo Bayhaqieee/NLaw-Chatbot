@@ -30,8 +30,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.documentElement.removeAttribute("data-theme");
                 localStorage.setItem("theme", "light");
             }
-            // Trigger Chart.js re-render logic if colors depend on theme
-            // (Currently relying on CSS variables but Chart.js usually needs explicit updates. We'll leave it as is, standard refresh fixes it)
+        });
+    }
+
+    // ── Scenario Description Updater ──────────────────────────────────────────
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    const scenarioDesc = document.getElementById('scenarioDesc');
+    const SCENARIO_DESCS = {
+        conservative: 'Sampling near-greedy — akurasi maksimum, minim variasi.',
+        balanced: 'Konfigurasi produksi — keseimbangan presisi dan keterbacaan.',
+        explorative: 'Sampling lebih luas — diversitas jawaban lebih tinggi.',
+        creative: 'Sampling warm — ekspresi maksimal, uji robustness model.',
+    };
+    if (scenarioSelect && scenarioDesc) {
+        scenarioSelect.addEventListener('change', () => {
+            scenarioDesc.textContent = SCENARIO_DESCS[scenarioSelect.value] || '';
         });
     }
 });
@@ -88,11 +101,17 @@ document.getElementById('btnEvaluate').addEventListener('click', async () => {
     const t0 = Date.now();
 
     try {
+        const scenario = document.getElementById('scenarioSelect')?.value || 'balanced';
+        // 2-hour timeout — 50 questions can take 75+ minutes
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 7200000);
         const res = await fetch(`${API_URL}/evaluate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ instructions: selected })
+            body: JSON.stringify({ instructions: selected, scenario: scenario }),
+            signal: controller.signal,
         });
+        clearTimeout(timeoutId);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
@@ -103,11 +122,38 @@ document.getElementById('btnEvaluate').addEventListener('click', async () => {
 
     } catch (e) {
         document.getElementById('resultsContainer').innerHTML =
-            `<div style="padding:30px;color:var(--red);text-align:center;">Evaluasi gagal: ${e.message}</div>`;
+            `<div style="padding:30px;color:var(--red);text-align:center;">Evaluasi gagal: ${e.message}<br><br>
+             <button onclick="loadLastResults()" style="padding:10px 20px;background:var(--gold);color:#000;border:none;border-radius:var(--rs);font-weight:700;cursor:pointer;">
+                 Muat Hasil Terakhir
+             </button></div>`;
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
 });
+
+// ── Load Last Cached Results ─────────────────────────────────────────
+async function loadLastResults() {
+    // Destroy old charts
+    Object.values(_charts).forEach(c => c?.destroy());
+    Object.keys(_charts).forEach(k => delete _charts[k]);
+
+    document.getElementById('resultsContainer').innerHTML = '';
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('vizSection').style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_URL}/evaluate/last`);
+        if (!res.ok) throw new Error(`HTTP ${res.status} — Tidak ada hasil tersimpan.`);
+        const data = await res.json();
+
+        renderSummary(data.results, data.total_time_sec, data.total_time_sec);
+        if (data.global_viz) renderGlobalViz(data.global_viz);
+        renderResults(data.results);
+    } catch (e) {
+        document.getElementById('resultsContainer').innerHTML =
+            `<div style="padding:30px;color:var(--red);text-align:center;">Gagal memuat hasil: ${e.message}</div>`;
+    }
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // SUMMARY SECTION

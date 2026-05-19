@@ -51,6 +51,32 @@ CHAT_FT_OPTIONS = {
     "stop":        _FT_STOP,
 }
 
+# ── Evaluation Hyperparameter Scenarios ──────────────────────────────────
+# These ONLY affect the Fine-Tuned model during evaluation runs.
+# The Chatbot page always uses CHAT_FT_OPTIONS; Vanilla always uses VANILLA_OPTIONS.
+EVAL_SCENARIOS = {
+    "conservative": {
+        "num_predict": 512,  "temperature": 0.05, "top_p": 0.85,
+        "top_k": 20, "repeat_penalty": 1.3, "repeat_last_n": 512,
+        "num_ctx": 4096, "stop": _FT_STOP,
+    },
+    "balanced": {
+        "num_predict": 512,  "temperature": 0.10, "top_p": 0.90,
+        "top_k": 40, "repeat_penalty": 1.55, "repeat_last_n": 512,
+        "num_ctx": 4096, "stop": _FT_STOP,
+    },
+    "explorative": {
+        "num_predict": 600,  "temperature": 0.25, "top_p": 0.92,
+        "top_k": 50, "repeat_penalty": 1.4, "repeat_last_n": 512,
+        "num_ctx": 4096, "stop": _FT_STOP,
+    },
+    "creative": {
+        "num_predict": 600,  "temperature": 0.40, "top_p": 0.95,
+        "top_k": 60, "repeat_penalty": 1.2, "repeat_last_n": 512,
+        "num_ctx": 4096, "stop": _FT_STOP,
+    },
+}
+
 VANILLA_SYSTEM = (
     "Anda adalah NusantaraLaw, konsultan hukum profesional Indonesia yang berperan sebagai: "
     "(1) Konsultan Hukum — memberikan analisis hukum yang akurat berdasarkan peraturan perundang-undangan Indonesia, "
@@ -115,14 +141,22 @@ def _clean(text: str) -> str:
     return text.strip()
 
 
-def _generate_ft_chat(prompt: str, system_prompt: str, is_chat: bool = False) -> str:
+def _generate_ft_chat(prompt: str, system_prompt: str,
+                      is_chat: bool = False, eval_scenario: str = None) -> str:
     """Use /api/chat for FT model — proper Qwen chat template formatting.
     
-    is_chat=True  → CHAT_FT_OPTIONS  (slightly more creative, for chatbot)
-    is_chat=False → FINETUNED_OPTIONS (strict, deterministic, for evaluation)
+    is_chat=True       → CHAT_FT_OPTIONS  (slightly more creative, for chatbot)
+    is_chat=False       → FINETUNED_OPTIONS (strict, deterministic, for evaluation)
+    eval_scenario=name → EVAL_SCENARIOS[name] (override for evaluation hyperparameter testing)
     """
-    url  = f"{OLLAMA_HOST}/api/chat"
-    opts = (CHAT_FT_OPTIONS if is_chat else FINETUNED_OPTIONS).copy()
+    url = f"{OLLAMA_HOST}/api/chat"
+    if eval_scenario and eval_scenario in EVAL_SCENARIOS:
+        opts = EVAL_SCENARIOS[eval_scenario].copy()
+        print(f"[ollama] FT using eval scenario: {eval_scenario}")
+    elif is_chat:
+        opts = CHAT_FT_OPTIONS.copy()
+    else:
+        opts = FINETUNED_OPTIONS.copy()
     payload = {
         "model":      FINETUNED_MODEL,
         "messages":   [
@@ -146,13 +180,15 @@ def _generate_ft_chat(prompt: str, system_prompt: str, is_chat: bool = False) ->
         return None
 
 def generate_local(prompt: str, model: str = VANILLA_MODEL,
-                   system_prompt: str = None, is_chat: bool = False) -> str:
+                   system_prompt: str = None, is_chat: bool = False,
+                   eval_scenario: str = None) -> str:
     if system_prompt is None:
         system_prompt = FINETUNED_SYSTEM if model == FINETUNED_MODEL else VANILLA_SYSTEM
 
     # FT model uses /api/chat for proper Qwen3.5 chat template
     if model == FINETUNED_MODEL:
-        return _generate_ft_chat(prompt, system_prompt, is_chat=is_chat)
+        return _generate_ft_chat(prompt, system_prompt, is_chat=is_chat,
+                                 eval_scenario=eval_scenario)
 
     # Vanilla uses /api/generate with think:False
     url  = f"{OLLAMA_HOST}/api/generate"

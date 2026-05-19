@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Golden Test Set - NusantaraLaw</title>
     <link rel="stylesheet" href="style.css?v=15">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@600;700;800&family=Lora:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@600;700;800&family=Lora:wght@600;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Evaluation-specific overrides */
@@ -610,9 +612,53 @@
                 <button class="btn-evaluate" id="btnEvaluate" disabled>
                     Mulai Evaluasi (<span id="selCount">0</span>)
                 </button>
+                <button onclick="loadLastResults()" style="
+                    width: 100%;
+                    padding: 8px;
+                    background: var(--s2);
+                    border: 1px solid var(--b0);
+                    color: var(--t2);
+                    font-size: 11.5px;
+                    font-weight: 600;
+                    font-family: 'Inter', sans-serif;
+                    border-radius: var(--rs);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                " onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+                    onmouseout="this.style.borderColor='var(--b0)';this.style.color='var(--t2)'">
+                    Muat Hasil Terakhir
+                </button>
                 <div class="select-all-row">
                     <input type="checkbox" id="selectAll">
                     <label for="selectAll">Pilih Semua</label>
+                </div>
+            </div>
+
+            <!-- Hyperparameter Scenario Selector -->
+            <div class="eval-actions" style="border-bottom: 1px solid var(--b0);">
+                <div
+                    style="font-size: 9.5px; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--t3); margin-bottom: 4px;">
+                    Skenario Hyperparameter
+                </div>
+                <select id="scenarioSelect" style="
+                    width: 100%;
+                    padding: 8px 10px;
+                    background: var(--s2);
+                    border: 1px solid var(--b0);
+                    border-radius: var(--rs);
+                    color: var(--t1);
+                    font-size: 12px;
+                    font-family: 'Inter', sans-serif;
+                    outline: none;
+                    cursor: pointer;
+                ">
+                    <option value="conservative">EXP-01 (temp 0.05)</option>
+                    <option value="balanced" selected>EXP-02 (temp 0.10)</option>
+                    <option value="explorative">EXP-03 (temp 0.25)</option>
+                    <option value="creative">EXP-04 (temp 0.40)</option>
+                </select>
+                <div id="scenarioDesc" style="font-size: 10.5px; color: var(--t3); margin-top: 4px; line-height: 1.5;">
+                    Konfigurasi produksi — keseimbangan presisi dan keterbacaan.
                 </div>
             </div>
 

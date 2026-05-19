@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import json
 import os
 import time
@@ -14,6 +14,8 @@ from services.milvus_client import search_milvus
 
 router = APIRouter()
 
+EVAL_CACHE_PATH = "/app/eval_results_cache.json"
+
 TEST_SET_PATH = "/app/Test-Set/data-test.json" if os.path.exists("/app/Test-Set/data-test.json") else os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "Test-Set", "data-test.json"
 )
@@ -25,6 +27,7 @@ MAX_CONTEXT_CHARS = 1800  # ~450 tokens; keeps total prompt well under num_ctx=4
 
 class EvaluationRequest(BaseModel):
     instructions: List[str]
+    scenario: Optional[str] = "balanced"
 
 
 @router.get("/api/test-cases")
@@ -92,6 +95,8 @@ def evaluate_instructions(request: EvaluationRequest):
         raise HTTPException(status_code=500, detail=f"Failed to load test cases: {e}")
 
     total_start  = time.time()
+    scenario = request.scenario or "balanced"
+    print(f"[eval] Using hyperparameter scenario: {scenario}")
 
     # ── Phase 1: Prepare all cases (context retrieval + prompt assembly) ───────
     cases = []
@@ -140,7 +145,8 @@ def evaluate_instructions(request: EvaluationRequest):
     print(f"[eval] === Fine-tuned batch: {len(cases)} questions ===")
     for c in cases:
         t1 = time.time()
-        c["finetuned_response"] = generate_local(c["prompt"], model="qwen3.5-9b-nlaw") or "Generation Failed"
+        c["finetuned_response"] = generate_local(c["prompt"], model="qwen3.5-9b-nlaw",
+                                                   eval_scenario=scenario) or "Generation Failed"
         c["finetuned_time"]     = round(time.time() - t1, 2)
         print(f"[eval] FT {c['finetuned_time']}s — {c['instruction'][:40]}")
 
@@ -207,4 +213,31 @@ def evaluate_instructions(request: EvaluationRequest):
             print(f"Global viz error: {e}")
 
     total_time = round(time.time() - total_start, 2)
-    return {"results": results, "total_time_sec": total_time, "global_viz": global_viz}
+    response_data = {
+        "results": results,
+        "total_time_sec": total_time,
+        "global_viz": global_viz,
+        "scenario_used": scenario,
+    }
+
+    # Cache results to disk so they survive frontend disconnects
+    try:
+        with open(EVAL_CACHE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(response_data, f, ensure_ascii=False, indent=2, default=str)
+        print(f"[eval] Results cached to {EVAL_CACHE_PATH}")
+    except Exception as e:
+        print(f"[eval] Failed to cache results: {e}")
+
+    return response_data
+
+
+@router.get("/api/evaluate/last")
+def get_last_evaluation():
+    """Retrieve the last cached evaluation results."""
+    if not os.path.exists(EVAL_CACHE_PATH):
+        raise HTTPException(status_code=404, detail="No cached evaluation results found.")
+    try:
+        with open(EVAL_CACHE_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read cache: {e}")

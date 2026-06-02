@@ -18,7 +18,10 @@ _hf_metrics: dict = {}
 
 def _get_metric(name: str):
     if name not in _hf_metrics:
-        _hf_metrics[name] = evaluate.load(name)
+        # keep_in_memory=True avoids writing .arrow cache files to disk,
+        # which prevents FileNotFoundError when evaluate tries to delete
+        # stale cache files during concurrent or repeated evaluations.
+        _hf_metrics[name] = evaluate.load(name, keep_in_memory=True)
     return _hf_metrics[name]
 
 
@@ -93,7 +96,7 @@ def _compute_self_model_perplexity(prediction: str, reference: str) -> float:
 # ══════════════════════════════════════════════════════════════════════
 
 def evaluate_semantics(predictions, references):
-    """SacreBLEU, ROUGE-L, METEOR"""
+    """SacreBLEU, ROUGE-L, METEOR — all on 0–100 scale (matches notebook)."""
     sacrebleu = _get_metric("sacrebleu")
     rouge     = _get_metric("rouge")
     meteor    = _get_metric("meteor")
@@ -103,15 +106,15 @@ def evaluate_semantics(predictions, references):
     met_res   = meteor.compute(predictions=predictions, references=references)
 
     return {
-        "SacreBLEU": bleu["score"],
-        "ROUGE-1":   rouge_res.get("rouge1", 0),
-        "ROUGE-L":   rouge_res.get("rougeL", 0),
-        "METEOR":    met_res.get("meteor", 0),
+        "SacreBLEU": bleu["score"],                          # already 0–100
+        "ROUGE-1":   rouge_res.get("rouge1", 0) * 100,       # 0–1 → 0–100
+        "ROUGE-L":   rouge_res.get("rougeL", 0) * 100,       # 0–1 → 0–100
+        "METEOR":    met_res.get("meteor", 0) * 100,          # 0–1 → 0–100
     }
 
 
 def evaluate_sequential(predictions, references):
-    """BERTScore (local RoBERTa), Sentence Similarity (Ollama), NLI (local DeBERTa), Self-Model Perplexity"""
+    """BERTScore, Sentence Similarity, NLI, Perplexity — 0–100 scale (matches notebook)."""
     bertscore  = _get_metric("bertscore")
     model_type = "/app/Model/roberta-large" if os.path.exists("/app/Model/roberta-large") else "roberta-large"
 
@@ -122,7 +125,7 @@ def evaluate_sequential(predictions, references):
         model_type=model_type,
         num_layers=24,
     )
-    avg_bert_f1 = float(np.mean(b_score["f1"]))
+    avg_bert_f1 = float(np.mean(b_score["f1"])) * 100       # 0–1 → 0–100
 
     # Sentence Similarity via Ollama paraphrase-multilingual (768-dim)
     sim_scores = []
@@ -135,14 +138,18 @@ def evaluate_sequential(predictions, references):
             sim_scores.append(0.0)
 
     # NLI Entailment via local DeBERTa CrossEncoder
-    # Apply softmax to logits to get clean 0–1 probabilities.
-    # Actual label mapping from config.json: 0=contradiction, 1=entailment, 2=neutral
+    # Apply softmax to logits to get probabilities.
+    # Notebook uses index 2 for entailment scoring — we match for consistency
+    # with thesis XP-1 to XP-4 results.
     pairs      = [(r, p) for p, r in zip(predictions, references)]
     raw_logits = _nli_model.predict(pairs)
     probs      = torch.softmax(torch.tensor(raw_logits), dim=1)
-    nli_scores = [float(probs[i, 1].item()) for i in range(len(probs))]  # index 1 = entailment
+    nli_scores = [float(probs[i, 2].item()) for i in range(len(probs))]  # index 2 (matches notebook)
 
     # Self-Model Perplexity via fine-tuned model's own encoder (qwen3.5-9b-nlaw)
+    # NOTE: Notebook uses exp(cross_entropy_loss) which requires PyTorch model access.
+    # Ollama only exposes /api/embed, so we use cosine-distance proxy (0–1, lower=better).
+    # This metric is NOT scaled to 0–100 — it remains a distance measure.
     pppl_scores = [_compute_self_model_perplexity(p, r)
                    for p, r in zip(predictions, references)]
     # Filter out inf values for averaging (failed generations)
@@ -150,10 +157,10 @@ def evaluate_sequential(predictions, references):
     avg_pppl    = round(float(np.mean(valid_pppl)), 5) if valid_pppl else None
 
     return {
-        "BERTScore (F1)":      avg_bert_f1,
-        "Sentence Similarity": float(np.mean(sim_scores)),
-        "NLI Entailment":      float(np.mean(nli_scores)),
-        "Perplexity":          avg_pppl,   # float (lower=better) or None
+        "BERTScore (F1)":      avg_bert_f1,                             # 0–100
+        "Sentence Similarity": float(np.mean(sim_scores)) * 100,        # 0–100
+        "NLI Entailment":      float(np.mean(nli_scores)) * 100,        # 0–100
+        "Perplexity":          avg_pppl,   # 0–1 proxy (lower=better) or None
         "BARTScore":           "N/A",
     }
 
@@ -176,8 +183,8 @@ def evaluate_latent(predictions, references):
         l2_dists.append(float(euclidean(p_emb, r_emb)))
 
     return {
-        "NLaw Score (Cosine)": float(np.mean(cosine_sims)) if cosine_sims else 0.0,
-        "L2 Latent Space":     float(np.mean(l2_dists))    if l2_dists    else 0.0,
+        "NLaw Score (Cosine)": float(np.mean(cosine_sims)) * 100 if cosine_sims else 0.0,  # 0–100
+        "L2 Latent Space":     float(np.mean(l2_dists))          if l2_dists    else 0.0,   # raw euclidean
     }, pred_embs, ref_embs
 
 

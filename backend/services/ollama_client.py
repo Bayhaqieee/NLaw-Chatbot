@@ -212,13 +212,27 @@ def generate_local(prompt: str, model: str = VANILLA_MODEL,
 
 
 def get_embeddings_local(text: str, model: str = "qwen3-embedding:8b") -> list:
+    """Get embeddings from Ollama with retry logic for GPU contention.
+    
+    During evaluation, the GPU alternates between LLM generation and embedding.
+    If the model is still unloading/loading, the embed call can time out.
+    We retry up to 3 times with increasing backoff to handle this.
+    """
+    import time
     url     = f"{OLLAMA_HOST}/api/embed"
     payload = {"model": model, "input": text}
-    try:
-        resp = requests.post(url, json=payload, timeout=60)
-        resp.raise_for_status()
-        embs = resp.json().get("embeddings", [])
-        return embs[0] if embs else []
-    except Exception as e:
-        print(f"[ollama] Embed error: {e}")
-        return []
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            resp = requests.post(url, json=payload, timeout=180)
+            resp.raise_for_status()
+            embs = resp.json().get("embeddings", [])
+            return embs[0] if embs else []
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait = 10 * (attempt + 1)
+                print(f"[ollama] Embed attempt {attempt+1} failed: {e} — retrying in {wait}s")
+                time.sleep(wait)
+            else:
+                print(f"[ollama] Embed error after {max_retries} attempts: {e}")
+                return []

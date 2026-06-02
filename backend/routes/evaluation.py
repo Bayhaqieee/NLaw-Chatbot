@@ -14,7 +14,7 @@ from services.milvus_client import search_milvus
 
 router = APIRouter()
 
-EVAL_CACHE_PATH = "/app/eval_results_cache.json"
+EVAL_CACHE_PATH = "/app/eval_cache/eval_results_cache.json"
 
 TEST_SET_PATH = "/app/Test-Set/data-test.json" if os.path.exists("/app/Test-Set/data-test.json") else os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "Test-Set", "data-test.json"

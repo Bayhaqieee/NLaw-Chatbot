@@ -2,7 +2,7 @@
 
 A self-hosted Indonesian legal AI chatbot combining QLoRA fine-tuning, RAG over verified law documents, and a 9-metric evaluation dashboard — built for BAB IV of an undergraduate thesis on Indonesian Legal AI.
 
-> **Fine-Tuned model wins 8/9 evaluation metrics vs the vanilla baseline.**
+> **Fine-Tuned model wins 9/9 evaluation metrics in XP-1 (Conservative scenario) vs the vanilla baseline.**
 
 ---
 
@@ -10,7 +10,7 @@ A self-hosted Indonesian legal AI chatbot combining QLoRA fine-tuning, RAG over 
 
 | Component          | Technology                                      |
 |--------------------|-------------------------------------------------|
-| Frontend           | HTML5 + Vanilla JS + CSS3 (dark glassmorphism)  |
+| Frontend           | HTML5 + Vanilla JS + CSS3 (dual-theme glassmorphism) |
 | Backend API        | FastAPI 0.111 + Uvicorn (Python 3.11)           |
 | Vector DB          | Milvus v2.4 (Docker)                            |
 | Embedding          | `qwen3-embedding:8b` via Ollama (4096-dim)      |
@@ -98,11 +98,26 @@ Responses show a model badge: **Fine-Tuned** (gold) · **Vanilla** (grey) · **H
 ### Evaluation Dashboard (`localhost:3000/evaluation.html`)
 
 1. Select test cases (or "Pilih Semua")
-2. Click **Mulai Evaluasi**
-3. Results include:
+2. Choose a **Skenario Hyperparameter** from the dropdown:
+   - **EXP-01** — Conservative (temp 0.05) — Maximum accuracy
+   - **EXP-02** — Balanced (temp 0.10) — Production default
+   - **EXP-03** — Explorative (temp 0.25) — Enhanced diversity
+   - **EXP-04** — Creative (temp 0.40) — Maximum expressiveness
+3. Click **Mulai Evaluasi**
+4. Results include:
    - **Ringkasan Evaluasi** — average metric comparison, winner highlighted
    - **Kompilasi Latent Space** — all embeddings in one shared PCA/t-SNE (○ Vanilla, △ FT, □ GT)
    - **Per-Question Cards** — individual metrics + per-question latent space chart
+5. If the connection drops during a long evaluation, click **Muat Hasil Terakhir** to load cached results
+
+> **Note**: Hyperparameter scenarios only affect the Fine-Tuned model during evaluation. The chatbot always uses fixed production parameters.
+
+### Showcase (`localhost:3000/showcase.html`)
+
+Static evaluation reports for thesis documentation:
+- `showcase-xp1.html` through `showcase-xp4.html`
+- Print-optimized with `@media print` CSS
+- Mirrors the evaluation dashboard layout
 
 ---
 
@@ -125,20 +140,22 @@ docker system prune -f
 
 ---
 
-## Evaluation Results
+## Evaluation Results (XP-1 — Conservative Scenario)
 
 | Metric          | Vanilla | Fine-Tuned | Winner         |
 |-----------------|---------|------------|----------------|
-| SacreBLEU       | 5.27    | **7.31**   | ✅ Fine-Tuned   |
-| ROUGE-L         | 0.155   | **0.178**  | ✅ Fine-Tuned   |
-| METEOR          | 0.286   | **0.300**  | ✅ Fine-Tuned   |
-| BERTScore (F1)  | **0.970** | 0.969   | Vanilla        |
-| Sentence Sim    | 0.546   | **0.753**  | ✅ Fine-Tuned   |
-| NLI Entailment  | -0.082  | **+2.765** | ✅ Fine-Tuned   |
-| Perplexity      | 1.340   | **1.120**  | ✅ Fine-Tuned   |
-| NLaw Score      | 0.665   | **0.736**  | ✅ Fine-Tuned   |
-| L2 Distance     | 0.817   | **0.707**  | ✅ Fine-Tuned   |
-| **Overall**     |         | **8 / 9**  | **Fine-Tuned** |
+| SacreBLEU       | 6.4634  | **12.3319** | ✅ Fine-Tuned  |
+| ROUGE-L         | 0.2360  | **0.2958**  | ✅ Fine-Tuned  |
+| METEOR          | 0.3877  | **0.4079**  | ✅ Fine-Tuned  |
+| BERTScore (F1)  | 0.9742  | **0.9746**  | ✅ Fine-Tuned  |
+| Sentence Sim    | 0.6897  | **0.7818**  | ✅ Fine-Tuned  |
+| NLI Entailment  | 0.1239  | **0.3623**  | ✅ Fine-Tuned  |
+| Perplexity ↓    | 0.35744 | **0.29074** | ✅ Fine-Tuned  |
+| NLaw Score      | 0.6426  | **0.7093**  | ✅ Fine-Tuned  |
+| L2 Distance ↓   | 0.8351  | **0.7406**  | ✅ Fine-Tuned  |
+| **Overall**     |         | **9 / 9**   | **Fine-Tuned** |
+
+> Full XP-1 to XP-4 results available in [`Idea/idea.md`](./Idea/idea.md#12-validated-evaluation-results-xp-1-to-xp-4). Hyperparameter rationale in [`Idea/rag_hyperparameter.md`](./Idea/rag_hyperparameter.md).
 
 ---
 
@@ -151,19 +168,22 @@ NusantaraLaw-Chatbot/
 ├── README.md
 ├── download_nli.py
 ├── check_logs.ps1
+├── generate_showcase.py
 ├── Idea/
 │   ├── idea.md                  ← Master technical document
 │   ├── Requirement_Specs.md
 │   ├── Design_Specs.md
 │   ├── Implementation_Specs.md
-│   └── Technical_Specs.md
+│   ├── Technical_Specs.md
+│   └── rag_hyperparameter.md    ← Hyperparameter scenario rationale
 ├── backend/
 │   ├── routes/   (chat, upload, evaluation, documents, health)
 │   └── services/ (ollama_client, milvus_client, searxng_client,
 │                   rag_pipeline, hf_inference, evaluator, pdf_parser)
-├── frontend/     (index.html, style.css, app.js, evaluation.html/js)
+├── frontend/     (index.html, style.css, app.js, evaluation.html/js,
+│                   showcase.html, showcase-xp[1-4].html)
 ├── milvus/       (init_collection.py, embed_documents.py)
 ├── Model/        (nli-deberta-v3-base/, roberta-large/)
 ├── UU-PDP/       (Indonesian law PDFs)
-└── Test-Set/     (data-test.json)
+└── Test-Set/     (data-test.json — 50 golden test cases)
 ```

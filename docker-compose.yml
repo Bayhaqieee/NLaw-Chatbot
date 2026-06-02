@@ -23,6 +23,7 @@ services:
       - ./UU-PDP:/app/documents:ro   # Mount law documents read-only
       - ./Model:/app/Model:ro        # Mount local models
       - ./Test-Set:/app/Test-Set:ro  # Mount test cases
+      - ./eval_cache:/app/eval_cache # Persist evaluation results across rebuilds
     depends_on:
       - milvus-standalone
       - searxng

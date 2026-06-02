@@ -102,9 +102,9 @@ document.getElementById('btnEvaluate').addEventListener('click', async () => {
 
     try {
         const scenario = document.getElementById('scenarioSelect')?.value || 'balanced';
-        // 2-hour timeout — 50 questions can take 75+ minutes
+        // 5-hour timeout — explorative/creative scenarios with 50 questions can take 3+ hours
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 7200000);
+        const timeoutId = setTimeout(() => controller.abort(), 18000000);
         const res = await fetch(`${API_URL}/evaluate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -121,11 +121,23 @@ document.getElementById('btnEvaluate').addEventListener('click', async () => {
         renderResults(data.results);
 
     } catch (e) {
-        document.getElementById('resultsContainer').innerHTML =
-            `<div style="padding:30px;color:var(--red);text-align:center;">Evaluasi gagal: ${e.message}<br><br>
-             <button onclick="loadLastResults()" style="padding:10px 20px;background:var(--gold);color:#000;border:none;border-radius:var(--rs);font-weight:700;cursor:pointer;">
-                 Muat Hasil Terakhir
-             </button></div>`;
+        // If aborted or connection lost, the backend may have finished and cached results.
+        // Auto-attempt loading cached results before showing the error.
+        if (e.name === 'AbortError' || e.message?.includes('abort')) {
+            document.getElementById('resultsContainer').innerHTML =
+                `<div style="padding:30px;color:var(--gold);text-align:center;">
+                    Koneksi timeout — evaluasi mungkin masih berjalan di backend.<br>
+                    Mencoba memuat hasil tersimpan...
+                </div>`;
+            // Wait a moment then try loading cached results
+            setTimeout(() => loadLastResults(), 2000);
+        } else {
+            document.getElementById('resultsContainer').innerHTML =
+                `<div style="padding:30px;color:var(--red);text-align:center;">Evaluasi gagal: ${e.message}<br><br>
+                 <button onclick="loadLastResults()" style="padding:10px 20px;background:var(--gold);color:#000;border:none;border-radius:var(--rs);font-weight:700;cursor:pointer;">
+                     Muat Hasil Terakhir
+                 </button></div>`;
+        }
     } finally {
         document.getElementById('loadingOverlay').style.display = 'none';
     }
@@ -241,7 +253,7 @@ function renderSummary(results, serverTime, clientTime) {
 function fmt(v, isPPPL = false) {
     if (v === 'N/A' || v === null || v === undefined) return 'N/A';
     if (v === Infinity || v === 'Infinity') return '∞';
-    if (typeof v === 'number') return isPPPL ? v.toFixed(5) : v.toFixed(4);
+    if (typeof v === 'number') return isPPPL ? v.toFixed(5) : v.toFixed(2);
     return String(v);
 }
 

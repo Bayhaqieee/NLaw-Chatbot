@@ -2,7 +2,7 @@
 
 A self-hosted Indonesian legal AI chatbot combining QLoRA fine-tuning, RAG over verified law documents, and a 9-metric evaluation dashboard — built for BAB IV of an undergraduate thesis on Indonesian Legal AI.
 
-> **Fine-Tuned model wins 9/9 evaluation metrics in XP-1 (Conservative scenario) vs the vanilla baseline.**
+> **Fine-Tuned model wins 7–8 out of 9 evaluation metrics across all 4 hyperparameter scenarios vs the vanilla baseline.**
 
 ---
 
@@ -108,7 +108,7 @@ Responses show a model badge: **Fine-Tuned** (gold) · **Vanilla** (grey) · **H
    - **Ringkasan Evaluasi** — average metric comparison, winner highlighted
    - **Kompilasi Latent Space** — all embeddings in one shared PCA/t-SNE (○ Vanilla, △ FT, □ GT)
    - **Per-Question Cards** — individual metrics + per-question latent space chart
-5. If the connection drops during a long evaluation, click **Muat Hasil Terakhir** to load cached results
+5. If the connection drops during a long evaluation, click **Muat Hasil Terakhir** to load cached results from `eval_cache/`
 
 > **Note**: Hyperparameter scenarios only affect the Fine-Tuned model during evaluation. The chatbot always uses fixed production parameters.
 
@@ -118,6 +118,95 @@ Static evaluation reports for thesis documentation:
 - `showcase-xp1.html` through `showcase-xp4.html`
 - Print-optimized with `@media print` CSS
 - Mirrors the evaluation dashboard layout
+
+---
+
+## Evaluation Results
+
+All experiments evaluate **50 test cases** across both Vanilla (`qwen3.5:9b`) and Fine-Tuned (`qwen3.5-9b-nlaw`) models. Metrics follow the 0–100 scale for percentage-based metrics (matching the Kaggle evaluation notebook). Lower is better for Perplexity (↓) and L2 Distance (↓).
+
+### EXP-01 — Conservative (temp 0.05)
+
+*Fine-Tuned won 7/9 metrics · 50 cases · Server: 6691s*
+
+| Metric          | Vanilla  | Fine-Tuned | Winner         |
+|-----------------|----------|------------|----------------|
+| SacreBLEU       | 6.7901   | **9.3025** | ✅ Fine-Tuned  |
+| ROUGE-L         | **0.2429** | 0.2515   | ✅ Fine-Tuned  |
+| METEOR          | **0.4001** | 0.3444   | ❌ Vanilla     |
+| BERTScore (F1)  | **0.9742** | 0.9728   | ❌ Vanilla     |
+| Sentence Sim    | 0.6810   | **0.7618** | ✅ Fine-Tuned  |
+| NLI Entailment  | 0.1129   | **0.3848** | ✅ Fine-Tuned  |
+| Perplexity ↓    | 0.34507  | **0.30072** | ✅ Fine-Tuned |
+| NLaw Score      | 0.6549   | **0.6993** | ✅ Fine-Tuned  |
+| L2 Distance ↓   | 0.8207   | **0.7515** | ✅ Fine-Tuned  |
+
+---
+
+### EXP-02 — Balanced (temp 0.10)
+
+*Fine-Tuned won 8/9 metrics · 50 cases · Server: 6157s*
+
+| Metric          | Vanilla  | Fine-Tuned  | Winner         |
+|-----------------|----------|-------------|----------------|
+| SacreBLEU       | 6.1879   | **10.1060** | ✅ Fine-Tuned  |
+| ROUGE-L         | 0.2319   | **0.2789**  | ✅ Fine-Tuned  |
+| METEOR          | **0.3856** | 0.3710    | ❌ Vanilla     |
+| BERTScore (F1)  | 0.9739   | **0.9742**  | ✅ Fine-Tuned  |
+| Sentence Sim    | 0.6742   | **0.7745**  | ✅ Fine-Tuned  |
+| NLI Entailment  | 0.1362   | **0.2643**  | ✅ Fine-Tuned  |
+| Perplexity ↓    | 0.35067  | **0.29195** | ✅ Fine-Tuned  |
+| NLaw Score      | 0.6392   | **0.7081**  | ✅ Fine-Tuned  |
+| L2 Distance ↓   | 0.8386   | **0.7433**  | ✅ Fine-Tuned  |
+
+---
+
+### EXP-03 — Explorative (temp 0.25)
+
+*Fine-Tuned won 7/9 metrics · 50 cases · Server: 6634s*
+
+| Metric          | Vanilla  | Fine-Tuned  | Winner         |
+|-----------------|----------|-------------|----------------|
+| SacreBLEU       | 6.2635   | **9.4924**  | ✅ Fine-Tuned  |
+| ROUGE-L         | 0.2392   | **0.2576**  | ✅ Fine-Tuned  |
+| METEOR          | **0.3825** | 0.3542    | ❌ Vanilla     |
+| BERTScore (F1)  | **0.9738** | 0.9733    | ❌ Vanilla     |
+| Sentence Sim    | 0.6767   | **0.7550**  | ✅ Fine-Tuned  |
+| NLI Entailment  | 0.1470   | **0.3470**  | ✅ Fine-Tuned  |
+| Perplexity ↓    | 0.36185  | **0.29701** | ✅ Fine-Tuned  |
+| NLaw Score      | 0.6381   | **0.7030**  | ✅ Fine-Tuned  |
+| L2 Distance ↓   | 0.8402   | **0.7470**  | ✅ Fine-Tuned  |
+
+---
+
+### EXP-04 — Creative (temp 0.40)
+
+*Fine-Tuned won 8/9 metrics · 50 cases · Server: 5857s*
+
+| Metric          | Vanilla  | Fine-Tuned  | Winner         |
+|-----------------|----------|-------------|----------------|
+| SacreBLEU       | 6.2652   | **11.3469** | ✅ Fine-Tuned  |
+| ROUGE-L         | 0.2363   | **0.2828**  | ✅ Fine-Tuned  |
+| METEOR          | **0.3885** | 0.3592    | ❌ Vanilla     |
+| BERTScore (F1)  | 0.9738   | **0.9740**  | ✅ Fine-Tuned  |
+| Sentence Sim    | 0.6854   | **0.7220**  | ✅ Fine-Tuned  |
+| NLI Entailment  | 0.1270   | **0.3835**  | ✅ Fine-Tuned  |
+| Perplexity ↓    | 0.36004  | **0.29240** | ✅ Fine-Tuned  |
+| NLaw Score      | 0.6400   | **0.6871**  | ✅ Fine-Tuned  |
+| L2 Distance ↓   | 0.8385   | **0.7593**  | ✅ Fine-Tuned  |
+
+---
+
+### Cross-Scenario Summary
+
+| Scenario       | FT Wins | Vanilla Wins | Best SacreBLEU | Best NLI Entail |
+|----------------|---------|--------------|----------------|-----------------|
+| EXP-01 Conservative | 7/9 | 2/9 | 9.30 | 0.3848 |
+| EXP-02 Balanced     | 8/9 | 1/9 | 10.11 | 0.2643 |
+| EXP-03 Explorative  | 7/9 | 2/9 | 9.49 | 0.3470 |
+| EXP-04 Creative     | 8/9 | 1/9 | 11.35 | 0.3835 |
+
+> Full per-question results in [`Idea/Result/Website/`](./Idea/Result/Website/). Hyperparameter rationale in [`Idea/rag_hyperparameter.md`](./Idea/rag_hyperparameter.md).
 
 ---
 
@@ -140,25 +229,6 @@ docker system prune -f
 
 ---
 
-## Evaluation Results (XP-1 — Conservative Scenario)
-
-| Metric          | Vanilla | Fine-Tuned | Winner         |
-|-----------------|---------|------------|----------------|
-| SacreBLEU       | 6.4634  | **12.3319** | ✅ Fine-Tuned  |
-| ROUGE-L         | 0.2360  | **0.2958**  | ✅ Fine-Tuned  |
-| METEOR          | 0.3877  | **0.4079**  | ✅ Fine-Tuned  |
-| BERTScore (F1)  | 0.9742  | **0.9746**  | ✅ Fine-Tuned  |
-| Sentence Sim    | 0.6897  | **0.7818**  | ✅ Fine-Tuned  |
-| NLI Entailment  | 0.1239  | **0.3623**  | ✅ Fine-Tuned  |
-| Perplexity ↓    | 0.35744 | **0.29074** | ✅ Fine-Tuned  |
-| NLaw Score      | 0.6426  | **0.7093**  | ✅ Fine-Tuned  |
-| L2 Distance ↓   | 0.8351  | **0.7406**  | ✅ Fine-Tuned  |
-| **Overall**     |         | **9 / 9**   | **Fine-Tuned** |
-
-> Full XP-1 to XP-4 results available in [`Idea/idea.md`](./Idea/idea.md#12-validated-evaluation-results-xp-1-to-xp-4). Hyperparameter rationale in [`Idea/rag_hyperparameter.md`](./Idea/rag_hyperparameter.md).
-
----
-
 ## Project Structure
 
 ```
@@ -169,13 +239,15 @@ NusantaraLaw-Chatbot/
 ├── download_nli.py
 ├── check_logs.ps1
 ├── generate_showcase.py
+├── eval_cache/                  ← Persisted evaluation results (host-mounted)
 ├── Idea/
 │   ├── idea.md                  ← Master technical document
 │   ├── Requirement_Specs.md
 │   ├── Design_Specs.md
 │   ├── Implementation_Specs.md
 │   ├── Technical_Specs.md
-│   └── rag_hyperparameter.md    ← Hyperparameter scenario rationale
+│   ├── rag_hyperparameter.md    ← Hyperparameter scenario rationale
+│   └── Result/Website/          ← EXP-01 to EXP-04 full results (.txt/.md)
 ├── backend/
 │   ├── routes/   (chat, upload, evaluation, documents, health)
 │   └── services/ (ollama_client, milvus_client, searxng_client,

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NusantaraLaw 3D Vector Visualizer</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Plotly.js CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Panel -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i data-lucide="box" class="brand-icon"></i>
+                <div class="brand-text">
+                    <h1>NusantaraLaw</h1>
+                    <span>3D Vector Projector</span>
+                </div>
+            </div>
+
+            <!-- Stats Module -->
+            <div class="panel stats-panel">
+                <h2><i data-lucide="bar-chart-2"></i> Milvus Collection Stats</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Total di DB</span>
+                        <span id="stat-total" class="stat-val">-</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Dimuat</span>
+                        <span id="stat-loaded" class="stat-val">-</span>
+                    </div>
+                </div>
+                <div class="variance-info">
+                    <span class="stat-label">Explained Variance (PCA 3D)</span>
+                    <span id="stat-variance" class="stat-val-sm">-</span>
+                </div>
+            </div>
+
+            <!-- Configuration Module -->
+            <div class="panel config-panel">
+                <h2><i data-lucide="sliders"></i> Proyeksi & Kontrol</h2>
+                
+                <div class="control-group">
+                    <label for="limit-input">Batas Maksimal Titik (Limiter)</label>
+                    <div class="limit-control">
+                        <input type="range" id="limit-slider" min="100" max="2000" step="50" value="500">
+                        <input type="number" id="limit-input" min="100" max="2000" value="500">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="color-by">Warnai Titik Berdasarkan</label>
+                    <select id="color-by">
+                        <option value="doc_name">Nama Dokumen (UU/Perpres)</option>
+                        <option value="category">Kategori Hukum</option>
+                        <option value="none">Seragam (Tanpa Warna)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="filter-doc">Filter Dokumen</label>
+                    <select id="filter-doc">
+                        <option value="all">Semua Dokumen</option>
+                    </select>
+                </div>
+
+                <button id="btn-refresh" class="btn-primary">
+                    <i data-lucide="refresh-cw"></i> Muat Ulang Ruang Vektor
+                </button>
+            </div>
+
+            <!-- Custom Query Projection Module -->
+            <div class="panel query-panel">
+                <h2><i data-lucide="git-commit"></i> Proyeksikan Kueri Baru</h2>
+                <p class="panel-desc">Ketik teks untuk melihat bagaimana ia diposisikan secara geometris di antara dokumen hukum yang ada.</p>
+                <textarea id="query-text" placeholder="Contoh: Kewajiban melindungi data pribadi pengendali data..."></textarea>
+                <div class="query-actions">
+                    <button id="btn-project" class="btn-accent">
+                        <i data-lucide="sparkles"></i> Proyeksikan & Cari Tetangga
+                    </button>
+                    <button id="btn-clear-project" class="btn-secondary" disabled>
+                        Hapus Kueri
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="main-content">
+            <!-- Top Search & Highlight Panel -->
+            <header class="top-bar">
+                <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="search-highlight" placeholder="Ketik kata kunci untuk menyorot teks chunk secara real-time...">
+                </div>
+                <div id="search-results-count" class="search-count-badge" style="display: none;">
+                    0 ditemukan
+                </div>
+            </header>
+
+            <!-- 3D Graph Canvas Container -->
+            <section class="canvas-container">
+                <div id="plotly-canvas" class="plotly-canvas"></div>
+                <div id="loading-overlay" class="loading-overlay">
+                    <div class="spinner"></div>
+                    <p id="loading-text">Menghubungkan ke Milvus & Melakukan PCA...</p>
+                </div>
+            </section>
+
+            <!-- Bottom Selected Vector Info Panel -->
+            <footer class="info-panel">
+                <div class="info-header">
+                    <h2><i data-lucide="info"></i> Detail Vektor yang Dipilih</h2>
+                    <span id="selected-id-badge" class="id-badge">Pilih salah satu titik di grafik</span>
+                </div>
+                <div class="info-body-grid">
+                    <div class="meta-details">
+                        <div class="meta-row">
+                            <span class="meta-label">Dokumen:</span>
+                            <span id="info-doc" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Kategori:</span>
+                            <span id="info-cat" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Halaman:</span>
+                            <span id="info-page" class="meta-val">-</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-label">Posisi 3D:</span>
+                            <span id="info-coords" class="meta-val-coords">-</span>
+                        </div>
+                    </div>
+                    <div class="chunk-content">
+                        <span class="meta-label">Isi Teks Chunk:</span>
+                        <div id="info-text" class="chunk-text-box">
+                            Silakan arahkan kursor Anda atau klik salah satu titik vektor di grafik 3D untuk melihat potongan teks hukum yang bersangkutan.
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>

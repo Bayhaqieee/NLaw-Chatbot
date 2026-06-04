@@ -79,6 +79,19 @@ services:
     environment:
       - SEARXNG_BASE_URL=http://localhost:8080/
 
+  # ─── Vector Visualizer ──────────────────────────────────────
+  vector-visualizer:
+    build: ./vector_visualizer
+    ports:
+      - "8085:8085"
+    environment:
+      - MILVUS_HOST=milvus-standalone
+      - MILVUS_PORT=19530
+      - COLLECTION_NAME=nusantara_law
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    depends_on:
+      - milvus-standalone
+
 volumes:
   etcd_data:
   minio_data:

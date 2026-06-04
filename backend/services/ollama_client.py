@@ -166,14 +166,19 @@ def _generate_ft_chat(prompt: str, system_prompt: str,
         "stream":     False,
         "keep_alive": "10m",
         "options":    opts,
+        "think":      False,
     }
     try:
         resp = requests.post(url, json=payload, timeout=300)
         resp.raise_for_status()
-        content = resp.json().get("message", {}).get("content", "")
+        res_json = resp.json()
+        msg = res_json.get("message", {})
+        content = msg.get("content", "")
+        if not content.strip() and msg.get("thinking"):
+            content = msg.get("thinking")
         cleaned = _clean(content)
         if not cleaned:
-            print(f"[ollama] FT chat returned empty — response: {resp.json()}")
+            print(f"[ollama] FT chat returned empty — response: {res_json}")
         return cleaned
     except Exception as e:
         print(f"[ollama] FT chat error: {e}")

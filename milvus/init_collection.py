@@ -1,4 +1,5 @@
 import os
+import time
 from pymilvus import MilvusClient, DataType
 from dotenv import load_dotenv
 
@@ -14,7 +15,11 @@ def create_collection():
     client = MilvusClient(uri=uri)
 
     if client.has_collection(COLLECTION_NAME):
-        print(f"Collection '{COLLECTION_NAME}' already exists. Dropping it...")
+        print(f"Collection '{COLLECTION_NAME}' already exists. Releasing and dropping it...")
+        try:
+            client.release_collection(COLLECTION_NAME)
+        except Exception:
+            pass
         client.drop_collection(COLLECTION_NAME)
 
     schema = client.create_schema(auto_id=True, enable_dynamic_field=False)
@@ -35,12 +40,31 @@ def create_collection():
         params={"M": 8, "efConstruction": 64}
     )
 
+    print("Creating collection schema...")
     client.create_collection(
         collection_name=COLLECTION_NAME,
-        schema=schema,
+        schema=schema
+    )
+
+    print("Creating vector index on 'embedding' field...")
+    client.create_index(
+        collection_name=COLLECTION_NAME,
         index_params=index_params
     )
-    print(f"Collection '{COLLECTION_NAME}' created and indexed successfully.")
+
+    print("Loading collection into memory...")
+    for attempt in range(5):
+        try:
+            client.load_collection(collection_name=COLLECTION_NAME)
+            break
+        except Exception as e:
+            if "not loaded" in str(e).lower() and attempt < 4:
+                print(f"Waiting for load to register (attempt {attempt+1}/5)...")
+                time.sleep(2)
+            else:
+                raise
+
+    print(f"Collection '{COLLECTION_NAME}' created, indexed, and loaded successfully.")
 
 if __name__ == "__main__":
     create_collection()

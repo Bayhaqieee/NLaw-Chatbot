@@ -213,15 +213,18 @@ All experiments evaluate **50 test cases** across both Vanilla (`qwen3.5:9b`) an
 ## Maintenance
 
 ```bash
-# Rebuild after code changes
+# Rebuild and start main services (excluding vector-visualizer)
 docker-compose up -d --build backend frontend
 
-# Check logs
+# Start the optional 3D Vector Visualizer (runs separately to save resources)
+docker-compose --profile visualizer up -d --build
+
+# Check live backend logs
 .\check_logs.ps1
 # or: curl http://localhost:8000/api/logs
 
-# Reset Milvus (wipe + recreate collection)
-python milvus/init_collection.py
+# Reset Milvus collection (run using the virtual environment to avoid ModuleNotFoundError)
+.venv\Scripts\python.exe milvus/init_collection.py
 
 # Free up Docker storage
 docker system prune -f

@@ -3,329 +3,167 @@
     {
       "instruction": "Menurut UU No. 19 Tahun 2016, apa kewajiban pengendali data?",
       "ground_truth": "Pengendali data pribadi wajib melindungi dan memastikan keamanan data pribadi dengan melakukan penyusunan dan penerapan langkah teknis operasional untuk melindungi data dari gangguan, akses tidak sah, hingga kebocoran data.",
-      "context_used": "[1] UU Nomor 27 Tahun 2022.pdf: PRESIDEN BLIK INDONESIA -10- Pasal 18 (1) Pemrosesan Data Pribadi dapat dilalrukan oleh 2 (dua) atau lebih Pengendali Data Pribadi. (2) Dalam hal Pemrosesan Data Pribadi dilakukan oleh 2 (dua) atau lebih Pengendali Data Pribadi harus memenuhi syarat minimal: a. terdap...",
+      "context_used": "Pengendali data harus menjaga keamanan",
       "combined_viz": {
         "PCA": {
           "vanilla": [
-            0.2576266757943707,
-            0.44452186020724543
+            0.17098754041813463,
+            0.3765616002048666
           ],
           "finetuned": [
-            -0.5471143661732917,
-            -0.016929097126036755
+            -0.48607269817100784,
+            -0.06772901116560116
           ],
           "ground_truth": [
-            0.2894876903789209,
-            -0.42759276308120886
+            0.31508515775287327,
+            -0.3088325890392653
           ]
         },
         "tSNE": {
           "vanilla": [
-            192.33404541015625,
-            139.70623779296875
+            231.93405151367188,
+            38.342708587646484
           ],
           "finetuned": [
-            -281.350830078125,
-            262.14044189453125
+            -544.9671020507812,
+            -431.19158935546875
           ],
           "ground_truth": [
-            505.1747741699219,
-            58.845863342285156
+            743.5460205078125,
+            350.8727722167969
           ]
         }
       },
       "vanilla": {
-        "response": "Berdasarkan konteks dokumen yang Anda berikan yaitu **Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi** (bukan Undang-Undang Nomor 19 Tahun 2016), maka jawaban hukumnya merujuk pada ketentuan terbaru tersebut sebagai berikut: Kewajiban utama seorang Pengendali Data Pribadi menurut undang-undang ini meliputi memiliki dasar hukum untuk memproses data pribadi, menjamin kerahasiaan serta keutuhan sistem pengamanan teknis agar tidak terjadi akses tanpa hak, hingga bertanggung jawab penuh atas segala kegagalan pelindungan jika terjadi kebocoran data kepada Subjek Data Pribadi sesuai Pasal 38 sampai dengan Pasal 47. Hal ini menegaskan bahwa meskipun regulasi sebelumnya mungkin berbeda secara spesifik di UU No. 19/2016, prinsip inti mengenai tanggung jawab pengendalian tetap berlandaskan pada perlindungan konstitusional subjek data sebagaimana didefinisikan dalam Bab I dan Bagian Kedua dari UU No. 27 Tahun 2022.",
+        "response": "Menurut Undang-Undang Nomor 17 Tahun 2016 tentang Mekanisme Perlindungan Data Pribadi serta peraturan turunannya seperti Peraturan Pemerintah Nomor 85 Tahun 2018 mengenai Keamanan Sistem Informasi Elektronik, Pengendali Data memiliki kewajiban mutlak untuk menjamin kerahasiaan, keutuhan, ketersediaan informasi pribadi, mencegah akses tanpa hak terhadap sistem elektronik, melakukan pemantauan aktivitas pengguna internet di lingkungan organisasi mereka sendiri, serta melaporkan setiap pelanggaran perlindungan data yang terjadi kepada otoritas terkait secepatnya agar kerugian dapat diminimalisir sebelum meluas menjadi bencana nasional bagi privasi warga negara. Kewajiban ini juga mencakup penerapan standar teknis pengamanan sesuai dengan jenis ancaman gangguan pada sistem komputer maupun jaringan komunikasi publik sebagaimana diatur secara spesifik dalam Pasal 4 ayat (3) huruf a hingga d PP tersebut. Dengan demikian, langkah proaktif membangun infrastruktur siber dan prosedur respons insiden adalah bagian integral dari tanggung jawab hukum seorang Pengendali Data demi melindungi subjek数据处理 baik itu individu atau badan usaha lainnya.",
         "metrics": {
           "Semantic": {
-            "SacreBLEU": 1.115112157227915,
-            "ROUGE-1": 20.0,
+            "SacreBLEU": 0.4653394517223978,
+            "ROUGE-1": 22.727272727272727,
             "ROUGE-L": 12.5,
-            "METEOR": 25.401017844488834
+            "METEOR": 29.003873964752856
           },
           "Sequential": {
-            "BERTScore (F1)": 97.09674119949341,
-            "Sentence Similarity": 73.76739345079869,
-            "NLI Entailment": 43.77228915691376,
-            "Perplexity": 0.37845,
+            "BERTScore (F1)": 97.32359647750854,
+            "Sentence Similarity": 87.79420351165189,
+            "NLI Entailment": 99.09101128578186,
+            "Perplexity": 0.24526,
             "BARTScore": "N/A"
           },
           "Latent": {
-            "NLaw Score (Cosine)": 62.154762505402985,
-            "L2 Latent Space": 0.8700029251605049
+            "NLaw Score (Cosine)": 75.4735387236728,
+            "L2 Latent Space": 0.7003779822147252
           },
           "Visualization": {
             "PCA": [
               [
-                0.4350014625802525,
-                1.3234580131763347e-16
+                0.3501889911073626,
+                -1.826791576346197e-16
               ],
               [
-                -0.4350014625802523,
-                1.3234580131763352e-16
+                -0.35018899110736296,
+                -1.8267915763461948e-16
               ]
             ],
             "t-SNE": [
               [
                 -1523.730224609375,
-                3.0424219917583204e-20
+                -5.2165873912018196e-20
               ],
               [
                 1523.730224609375,
-                3.0424219917583204e-20
+                -5.2165873912018196e-20
               ]
             ]
           }
         },
-        "gen_time_sec": 89.03
+        "gen_time_sec": 74.34
       },
       "finetuned": {
-        "response": "Pengendalian terhadap penggunaan serta pelaporan dari kegiatan pengelolaan datanya oleh pihak-pihak terkait termasuk ke dalamnya sebagai bagian utama tanggungjawabnya bagi seluruh proses penanganan tersebut agar tetap aman selama masa penerapannja hingga saat berakhir pada waktunya nanti tanpa melanggar ketentuan perundangundangan apapun sebelumnya terlebih dahulu sebelum mulai melaksanakannyatersebut sejak awal mula sampai akhir periode operasional penuh nantinya juga sudah mencakup semua aspek penting mengenai hal-halnya itu tadi seperti misalnya bagaimana cara menyimpan arsip digital hasil kerja mereka masing-masing supaya bisa diakses kembali kapanpun diperlukan kemudian ketika dibutuhkan bukti-bukti hukum formal maka dokumen-dokumen semacam inilah akan menjadi dasar kuat buat membuktikan kebenaran suatu kasus tertentu kepada para penegak undangundangnya saja namun bukan hanya begitu melainkan bahkan lebih jauh lagi yaitu bahwa siapapun pun jika terbukti telah sengaja menyalahgunakan wewenang posisinya demi keuntungan pribadi semata sehingga menyebabkan kerugian finansial besar skala masif sekaligus merusak reputasipublik negara bangsa Indonesia karena tindakan curang tak bermoral sedemikian rupa sebagaimana itulah definisi sebenarnya atas pengertian istilah teknis khusus 'pengelolaandata'yang sering kita dengarkan seharihari sekarangini sesungguhnya hanyalah sebuah jargon kosong belaka kalau dipandang sekilas tapi justru sebaliknya apabila digoreng tuntas hakekat sejatinya betapa berbahayanyasekali bila seseorang berani mengabaikan aturan main这个游戏sedangkan di sisi lain ada banyak sekali contoh nyata kejadian serupa berulang kali terjadi sepanjang sejarah perjalanan panjang kemerdekaan RepublikIndonesia ini dimulai semenjak tahun satu sembilan ratus empat puluh lima lalu terus berlanjut samapi hari gajihari kini dimana tidak sedikit oknum pejabat tinggi pemerintahan tingkat nasional malah daerah lokal sama halnya demikian pula kondisi situasi sosial budaya masyarakat luas umumnya masih sangat rentan menghadapi ancaman gangguan stabilitaskemanaman internal luar negeri akibat pengaruh negatif masukdan penyebaran ideologi subversive radikalisme ekstremis terorismekriminalitas berat maupun bentuk eksploitasi ekonomi ilegal lainnya baik melalui jalur perdagangan bebas lintas batas wilayah maritim daratan udara internetcyberspaceatau media komunikasi modern canggih zaman kontemporerseperti smartphone tablet komputer laptop desktop server cloud storage database online platform social network streaming service aplikasi mobile game entertainment content sharing marketplace e-commerce payment gateway financial transaction system banking insurance investment fund management portfolio analysis risk assessment credit scoring identity verification background check security clearance access control authentication authorization encryption decryption compression decompression archiving backup restore recovery migration upgrade patch update installation configuration monitoring logging auditing reporting alerting notification warning danger emergency crisis intervention relief assistance support counseling guidance therapy rehabilitation reintegration empowerment liberation emancipation freedom independence sovereignty equality justice fairness balance harmony peace stability prosperity welfare happiness satisfaction fulfillment achievement",
+        "response": "Menurut Pasal 57 Ayat 8 huruf a hingga f UndangUndang Nomor 19 tahun 2016 tentang Perlindungan Data Pribadi sebagai Pengendalian terhadap akses kepada pribadi serta mencegah terjadinya pencurian identitas seseorang maka setiap orang wajib melakukan upaya perlindungan atas segala bentuk ancaman baik itu berupa tindakan fisik maupun nonfisik seperti serangan siber sehingga tetap terjaga keamanannya sesuai standar internasional termasuk penggunaan enkripsi tingkat tinggi agar sulit diretas oleh pihak luar tanpa izin resmi pemilik datanya sendiri; selain juga memastikan bahwa semua personel internal memiliki pelatihan memadai mengenai etika privasipun selama proses pengelolaan tersebut berlangsung sehari-harinya sampai saat ini pun demikian pentingnya bagi perusahaan teknologi modern semacam Gojek/Tokopedia/OVO/Mandiri Digital Bank dll supaya bisa dipercaya konsumen lokal sekaligus memenuhi persyaratan komprehensif menurut peraturan perundangan nasional Republik Rakyat Tiongkok khususnya bagian khusus perihal tata kelola manajemen risiko operasional bisnis skala besar berbasis digitalisasi canggih melalui kolaborasi lintas sektor publik swasta bersama-sama membangun ekosistem ekonomi kreatif berkelanjutan demi kesejahteraan rakyat banyak seluruh lapisan masyarakat luas mulai petani desa perkotaan pedesaan bahkan kelompok rentan minoritas disabilitas lansia anak-anak perempuan hamil ibu tunggal janda duda yatim piatu tunagrahita tuna netra tuli bisu mutung gugur fungsi organ tubuh manusia lainnya yang membutuhkan layanan kesehatan medis spesialistik lanjutan bertahap berjenjang sistematis secara proporsional adil transparant akuntabel bebas korupsi suka sama sukarela bukan paksaan memaksa mengintimidasikan menjerumuskan korban menjadi pelaku kriminal terselubungnya kejahatan transnasionalkriminal organisasi bersenjata gelap bawah tanah ilegal underground shadow network dark web cryptocurrency blockchain smart contract otomatis kontrak pintar cerdas buatan mesin algoritma AI machine learning deepfake generative adversarial networks GAN neural style transfer image synthesis audio cloning voice impersonation text generation natural language processing NLP sentiment analysis topic modeling keyword extraction entity recognition relation mapping causality inference prediction forecasting scenario planning risk assessment mitigation strategy implementation monitoring evaluation feedback loop continuous improvement iterative optimization performance benchmarking against industry standards compliance with legal frameworks ethical guidelines social responsibility corporate governance transparency accountability reporting mechanisms public disclosure requirements media engagement community outreach education awareness campaigns training workshops seminars conferences publications research papers case studies best practices sharing knowledge exchange collaboration partnerships strategic alliances market expansion internationalization localization adaptation cultural sensitivity respect diversity inclusion equity fairness justice human rights protection labor laws environmental sustainability green initiatives renewable energy conservation waste reduction recycling pollution control climate change action disaster preparedness resilience building emergency response coordination humanitarian aid relief operations peacekeeping missions conflict resolution mediation arbitration dispute settlement negotiation compromise",
         "metrics": {
           "Semantic": {
-            "SacreBLEU": 0.1454068157497789,
-            "ROUGE-1": 3.225806451612903,
-            "ROUGE-L": 1.3824884792626728,
-            "METEOR": 5.109489051094892
+            "SacreBLEU": 0.14217153403572774,
+            "ROUGE-1": 4.14746543778802,
+            "ROUGE-L": 2.304147465437788,
+            "METEOR": 6.540697674418605
           },
           "Sequential": {
-            "BERTScore (F1)": 96.65680527687073,
-            "Sentence Similarity": 74.02343580617902,
-            "NLI Entailment": 10.770528018474579,
-            "Perplexity": 0.43116,
+            "BERTScore (F1)": 96.87740802764893,
+            "Sentence Similarity": 89.54875155716631,
+            "NLI Entailment": 61.13998889923096,
+            "Perplexity": 0.34999,
             "BARTScore": "N/A"
           },
           "Latent": {
-            "NLaw Score (Cosine)": 56.884438629411974,
-            "L2 Latent Space": 0.9286072273682064
+            "NLaw Score (Cosine)": 65.0007451403268,
+            "L2 Latent Space": 0.8366509698626019
           },
           "Visualization": {
             "PCA": [
               [
-                -0.4643036136841031,
-                4.951013098264518e-16
+                -0.4183254849313009,
+                -1.4473054622464415e-16
               ],
               [
-                0.46430361368410217,
-                4.951013098264529e-16
+                0.4183254849313013,
+                -1.44730546224644e-16
               ]
             ],
             "t-SNE": [
               [
                 1523.730224609375,
-                1.0663309353512963e-19
+                -3.459759167715758e-20
               ],
               [
                 -1523.730224609375,
-                1.0663309353512963e-19
+                -3.459759167715758e-20
               ]
             ]
           }
         },
-        "gen_time_sec": 201.86
+        "gen_time_sec": 173.64
       },
-      "eval_time_sec": 102.27
-    },
-    {
-      "instruction": "Menurut Perpres No. 83 Tahun 2025, siapakah yang berhak memproses data?",
-      "ground_truth": "Pemrosesan data pribadi berhak dilakukan oleh pengendali data pribadi dan/atau prosesor data pribadi yang ditunjuk secara sah setelah mendapatkan persetujuan eksplisit yang sah dari subjek data pribadi.",
-      "context_used": "[1] UU Nomor 27 Tahun 2022.pdf: PRESlOEN REPUBLIK INDONESIA -21 - (2) Pengecualian sebagaimana dimaksud pada ayat (1) dilaksanakan hanya dalam rangka pelaksanaan ketentuan Undang-Undang. Bagian Ketiga Kewajiban Prosesor Data Pribadi Pasal 51 (1) Dalam hal Pengendali Data Pribadi menunjuk Prosesor Da...",
-      "combined_viz": {
-        "PCA": {
-          "vanilla": [
-            0.3328495108168949,
-            0.44466391469300665
-          ],
-          "finetuned": [
-            -0.6702200024287646,
-            -0.001995172672266462
-          ],
-          "ground_truth": [
-            0.3373704916118697,
-            -0.44266874202073997
-          ]
-        },
-        "tSNE": {
-          "vanilla": [
-            -67.04071807861328,
-            -43.33357620239258
-          ],
-          "finetuned": [
-            -319.9497375488281,
-            -110.76331329345703
-          ],
-          "ground_truth": [
-            99.98936462402344,
-            1.1995834112167358
-          ]
-        }
-      },
-      "vanilla": {
-        "response": "Berdasarkan analisis terhadap dokumen konteks yang Anda berikan yaitu **Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi**, tidak ditemukan regulasi bernama \"Perpres No. 83 Tahun 2025\" karena UU tersebut adalah undang-undang tingkat tinggi yang menjadi dasar utama pelindungan data di Indonesia saat ini. Namun, berdasarkan prinsip umum dalam UU No. 27/2022 khususnya pada Bagian Ketiga mengenai Kewajiban Prosesor Data Pribadi (**Pasal 51 ayat (1)**), pihak yang berwenang atau *berhak* untuk memproses data pribadi hanyalah **Prosesor Data Pribadi** semata-mata atas perintah tertulis dari **Pengendali Data Pribadi**. Hak prosesors dibatasi ketat; mereka wajib melakukan pemrosesan hanya sesuai tujuan dan perintah Pengendali Data serta bertanggung jawab penuh jika terjadi penyimpangan sebagaimana diatur dalam Pasal 51 ayat (6). Jika terdapat skenario dimana dua pengendali bersama-sama mengelola satu sistem data, maka hak pemrosesannya harus didasarkan pada perjanjian khusus antar-pengelola dengan syarat-syarat minimal seperti adanya narahubung gabungan dan tujuan pemrosesan yang saling berkaitan menurut ketentuan **Pasal 18**.",
-        "metrics": {
-          "Semantic": {
-            "SacreBLEU": 0.5834983355972779,
-            "ROUGE-1": 18.181818181818183,
-            "ROUGE-L": 11.76470588235294,
-            "METEOR": 17.97752808988764
-          },
-          "Sequential": {
-            "BERTScore (F1)": 96.81060314178467,
-            "Sentence Similarity": 56.292458490063304,
-            "NLI Entailment": 86.23209595680237,
-            "Perplexity": 0.39312,
-            "BARTScore": "N/A"
-          },
-          "Latent": {
-            "NLaw Score (Cosine)": 60.6881428080652,
-            "L2 Latent Space": 0.8867001164530203
-          },
-          "Visualization": {
-            "PCA": [
-              [
-                0.44335005822651036,
-                4.813140534202661e-16
-              ],
-              [
-                -0.44335005822651125,
-                4.813140534202649e-16
-              ]
-            ],
-            "t-SNE": [
-              [
-                -1523.730224609375,
-                1.0856298345239827e-19
-              ],
-              [
-                1523.730224609375,
-                1.0856298345239827e-19
-              ]
-            ]
-          }
-        },
-        "gen_time_sec": 100.04
-      },
-      "finetuned": {
-        "response": "Pemosisen dapat dilalui oleh satu Orang maupun dua pihak lebih seperti Badan Publik serta Organisasi Internasional selama memenuhi syarat minimal terkait perjanjian peran tanggung jawab bersama-sama dalam hal ini termasuk subjek manusia biasa hingga entitاس institusional resmi lainnya di lingkungan negara Indonesia sendiri sekalipun melibatkan badan internasional asing pun tetap harus tunduk terhadap aturan lokal nasional terlebih dahulu sebelum mulai menjalankan fungsi operasionalnya tanpa melanggar batasan yurisdiiksi wilayah kedaulatan setempat tersebut sama sekali tidak boleh terjadi pelanggaran batas-yang jelas sangat penting untuk dipahami semua pelaku bisnis modern saat era digitalisasi informasi semakin berkembang pesat setiap hari sekarang itu sudah menjadi norma baru bagi seluruh masyarakat dunia agar bisa hidup berdampingannya selaras harmonis saling menghormati hak-hak masing-masing demi terciptanya perdamaian global berkelanjutan sepanjang masa sampai kapanpun generasi-generasinya nanti akan selalu mengingat pelajaran berharga sejarah panjang perjalanan peradabuan umat sejak zaman kuno dulu kala ketika para leluhur kita masih menggunakan bahasa sederhana namun penuh makna mendalam tentang bagaimana seharusnya hubungan antarmanusia dibangun berdasarkan prinsip keadilan kebenaran kebaikan kasih sayang sebagai fondation utama membangun karakter bangsa kuat tangguh menghadapi tantangan perubahan cepat dinamis tak terduga apapun bentuk ancaman krisis ekonomi politik sosial budaya keamanan kesehatan bencana alam buatan alami manapun semuanya pasti ada solusi terbaik jika dikelola cerdas bijak hati nurani bersih jujur adil tegas berani bertanggungjawab sepenuh jiwa raga bukan sekadar formalitas administratif belaka melainkan wujud nyata komitmen moral tinggi kepada Tuhan Yang Maha Esa sekaligus会员服务 kemanusiaan sesama makhluk ciptaan-Nya semesta raya luas besar kecil jauh dekat waktu ruang dimensi apa saja senantiasa terhubung erat melalui benangnya takdir ilahi mutlak sempurna sebagaimana tertulis pada kitab suci-agama mana juga baik Islam Kristen Katolik Hindu Buddha Kong Hu Cu atau aliran kepercayaan tradisional lain dari suku daerah tertentu bahkan gerakan reformisme progresif kontemporer semacam Pancasilaanisme Nusantara Modern tentu memiliki kesamaan esensi fundamental yaitu menjunjung harga diri martabat kebebasan kemuliaan potensi kreatif inovatif eksistensial individu kolektip komunitas kelompok organisasi korporat pemerintah pusat provinsi kabupaten kota desa kecamatan sekolah rumah sakit klinik farmasis apotek toko online marketplace platform media sosia network streaming video audio podcast blog forum chat room meeting virtual conference webinar seminar workshop training course learning management system e-learning distance education open university campus without walls internet of things blockchain artificial intelligence machine deep neural networks quantum computing cloud storage big数据分析 predictive modeling scenario planning risk assessment crisis intervention emergency response disaster relief humanitarian aid peacekeeping security defense military strategy diplomatic negotiation treaty ratification implementation monitoring evaluation reporting auditing accountability transparency integrity ethics professional conduct corporate governance public administration service delivery customer",
-        "metrics": {
-          "Semantic": {
-            "SacreBLEU": 0.12004845172983292,
-            "ROUGE-1": 2.6431718061674006,
-            "ROUGE-L": 1.762114537444934,
-            "METEOR": 2.985074626865672
-          },
-          "Sequential": {
-            "BERTScore (F1)": 96.53171896934509,
-            "Sentence Similarity": 49.15429149433284,
-            "NLI Entailment": 87.97606229782104,
-            "Perplexity": 0.60874,
-            "BARTScore": "N/A"
-          },
-          "Latent": {
-            "NLaw Score (Cosine)": 39.125635587338095,
-            "L2 Latent Space": 1.1033987332557542
-          },
-          "Visualization": {
-            "PCA": [
-              [
-                -0.5516993666278772,
-                2.597392525017e-16
-              ],
-              [
-                0.5516993666278778,
-                2.597392525016997e-16
-              ]
-            ],
-            "t-SNE": [
-              [
-                1523.730224609375,
-                4.707985698050787e-20
-              ],
-              [
-                -1523.730224609375,
-                4.707985698050787e-20
-              ]
-            ]
-          }
-        },
-        "gen_time_sec": 177.15
-      },
-      "eval_time_sec": 26.54
+      "eval_time_sec": 63.7
     }
   ],
-  "total_time_sec": 724.14,
+  "total_time_sec": 381.72,
   "global_viz": {
     "points": [
       {
         "q": 1,
         "type": "vanilla",
         "pca": [
-          0.29191304431070725,
-          0.14189186627463438
+          0.17098754041813463,
+          0.37656160020486656
         ],
         "tsne": [
-          -18.01946258544922,
-          -8.800898551940918
+          -5.9393415451049805,
+          -337.0885314941406
         ]
       },
       {
         "q": 1,
         "type": "finetuned",
         "pca": [
-          -0.19174257890143573,
-          0.34121915508730816
+          -0.48607269817100773,
+          -0.06772901116560125
         ],
         "tsne": [
-          25.23577117919922,
-          -10.886767387390137
+          366.5137023925781,
+          48.334896087646484
         ]
       },
       {
         "q": 1,
         "type": "ground_truth",
         "pca": [
-          0.35749206765743974,
-          0.3738688663418789
+          0.31508515775287327,
+          -0.30883258903926536
         ],
         "tsne": [
-          -8.571337699890137,
-          16.187143325805664
-        ]
-      },
-      {
-        "q": 2,
-        "type": "vanilla",
-        "pca": [
-          0.15156269524818652,
-          -0.4484645365775024
-        ],
-        "tsne": [
-          2.802527904510498,
-          -25.579153060913086
-        ]
-      },
-      {
-        "q": 2,
-        "type": "finetuned",
-        "pca": [
-          -0.7165273635149769,
-          -0.0026171233085166123
-        ],
-        "tsne": [
-          3.9776437282562256,
-          -2.8431262969970703
-        ]
-      },
-      {
-        "q": 2,
-        "type": "ground_truth",
-        "pca": [
-          0.10730213520007838,
-          -0.4058982278178022
-        ],
-        "tsne": [
-          18.167526245117188,
-          14.966106414794922
+          -154.94039916992188,
+          176.7181396484375
         ]
       }
     ]

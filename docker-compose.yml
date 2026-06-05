@@ -81,6 +81,8 @@ services:
 
   # ─── Vector Visualizer ──────────────────────────────────────
   vector-visualizer:
+    profiles:
+      - visualizer
     build: ./vector_visualizer
     ports:
       - "8085:8085"

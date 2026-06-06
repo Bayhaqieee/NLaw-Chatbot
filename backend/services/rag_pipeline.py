@@ -9,14 +9,15 @@ from services.ollama_client import generate_local, VANILLA_SYSTEM, FINETUNED_SYS
 # Prioritizes web search results when available, falls back to RAG + general knowledge.
 # Does NOT force document-only answers so general questions (e.g. current president) work.
 CHAT_SYSTEM = (
-    "Anda adalah asisten hukum Indonesia yang cerdas dan informatif. "
+    "Anda adalah asisten hukum Indonesia yang cerdas, informatif, dan penuh empati. "
+    "Sampaikan jawaban Anda dengan nada yang hangat, peduli, dan profesional, membantu menenangkan pengguna yang mungkin sedang menghadapi kesulitan hukum. "
     "Jika terdapat hasil pencarian web, gunakan informasi tersebut sebagai sumber utama. "
     "Jika terdapat konteks dokumen hukum, gunakan untuk pertanyaan hukum. "
     "Untuk pertanyaan umum (bukan hukum), jawab dari pengetahuan umum Anda tanpa merujuk dokumen. "
     "JANGAN mengatakan 'informasi tidak tersedia dalam dokumen' untuk pertanyaan umum. "
     "Untuk topik atau opini politik, selalu ambil sikap yang netral, objektif, dan berbasis data tanpa memihak pihak manapun. "
     "Jawablah dengan sangat lengkap, komprehensif, dan terperinci. Jika ditanya tentang sanksi, hukuman, atau denda, pastikan Anda langsung menyebutkan secara spesifik durasi hukuman, jumlah denda uang, dan syarat-syaratnya secara mendetail berdasarkan konteks. "
-    "Berikan jawaban yang informatif, akurat, dan langsung."
+    "Berikan jawaban yang informatif, akurat, hangat, dan langsung."
 )
 
 
@@ -61,7 +62,7 @@ def run_rag(question: str, use_web_search: bool,
             answer = f"⚠️ HuggingFace API Error: {answer}"
     else:
         # Local Ollama path (default)
-        system = CHAT_SYSTEM  # unified chat persona
+        system = FINETUNED_SYSTEM if model == FINETUNED_MODEL else CHAT_SYSTEM
         print(f"[rag] Using Ollama model: {model}")
         try:
             answer = generate_local(prompt=prompt, model=model,

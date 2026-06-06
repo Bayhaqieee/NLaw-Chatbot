@@ -190,7 +190,7 @@ function appendResponseWithSources(answer, sources, webResults, tokensSaved, mod
     let badgeBorder= isHFBadge ? 'rgba(56,189,248,0.3)' : (isFt ? 'rgba(201,162,39,0.3)' : 'var(--b1)');
 
     const modelBadge = modelLabel
-        ? `<span style="display:inline-block;margin-bottom:8px;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${badgeColor};background:${badgeBg};border:1px solid ${badgeBorder};border-radius:4px;padding:2px 8px;">${modelLabel}</span>`
+        ? `<div style="margin-bottom:8px;"><span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:${badgeColor};background:${badgeBg};border:1px solid ${badgeBorder};border-radius:4px;padding:2px 8px;">${modelLabel}</span></div>`
         : '';
 
     let sourcesHTML = "";

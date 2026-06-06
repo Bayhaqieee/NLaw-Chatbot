@@ -1,0 +1,42 @@
+[chat] POST /api/chat received — model=qwen3.5-9b-nlaw, web_search=False
+[chat] Question: 'Hello...'
+[milvus] Connecting to Milvus at http://milvus-standalone:19530...
+[milvus] Connected.
+[milvus] Collection 'nusantara_law' load state: {'state': <LoadState: Loaded>}
+[milvus] Collection already loaded — skipping load_collection().
+[milvus] Generating embedding for query: 'Hello...'
+[milvus] Searching collection 'nusantara_law' (top_k=5)...
+[milvus] Search returned 5 chunks (max_score=0.8266)
+[rag] Using Ollama model: qwen3.5-9b-nlaw
+[chat] Response generated in 101.1s — answer length: 3403 chars
+[chat] POST /api/chat received — model=qwen3.5-9b-nlaw, web_search=False
+[chat] Question: 'Apa pasal yang berkaitan dengan Hukuman pelanggar data pribadi pada UU PDP?...'
+[milvus] Generating embedding for query: 'Apa pasal yang berkaitan dengan Hukuman pelanggar ...'
+[milvus] Searching collection 'nusantara_law' (top_k=5)...
+[milvus] Search returned 5 chunks (max_score=0.9578)
+[rag] Using Ollama model: qwen3.5-9b-nlaw
+[chat] Response generated in 98.3s — answer length: 3682 chars
+[chat] POST /api/chat received — model=qwen3.5-9b-nlaw, web_search=False
+[chat] Question: 'Hello...'
+[milvus] Connecting to Milvus at http://milvus-standalone:19530...
+[milvus] Connected.
+[milvus] Collection 'nusantara_law' load state: {'state': <LoadState: Loaded>}
+[milvus] Collection already loaded — skipping load_collection().
+[milvus] Generating embedding for query: 'Hello...'
+[milvus] Searching collection 'nusantara_law' (top_k=5)...
+[milvus] Search returned 5 chunks (max_score=0.8266)
+[rag] Using Ollama model: qwen3.5-9b-nlaw
+[chat] Response generated in 22.8s — answer length: 5 chars
+[chat] POST /api/chat received — model=qwen3.5-9b-nlaw, web_search=False
+[chat] Question: 'Apa pasal yang berkaitan dengan Hukuman pelanggar data pribadi pada UU PDP?...'
+[milvus] Generating embedding for query: 'Apa pasal yang berkaitan dengan Hukuman pelanggar ...'
+[milvus] Searching collection 'nusantara_law' (top_k=5)...
+[milvus] Search returned 5 chunks (max_score=0.9578)
+[rag] Using Ollama model: qwen3.5-9b-nlaw
+[chat] Response generated in 45.9s — answer length: 838 chars
+[chat] POST /api/chat received — model=qwen3.5-9b-nlaw, web_search=False
+[chat] Question: 'Apa saja variasi hukumannya?...'
+[milvus] Generating embedding for query: 'Apa saja variasi hukumannya?...'
+[milvus] Searching collection 'nusantara_law' (top_k=5)...
+[milvus] Search returned 5 chunks (max_score=1.2316)
+[rag] Using Ollama model: qwen3.5-9b-nlaw

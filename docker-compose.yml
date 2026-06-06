@@ -4,6 +4,8 @@ services:
     build: ./frontend
     ports:
       - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
     depends_on:
       - backend
 
@@ -20,6 +22,7 @@ services:
       - SEARXNG_URL=http://searxng:8080
       - COLLECTION_NAME=nusantara_law
     volumes:
+      - ./backend:/app
       - ./UU-PDP:/app/documents:ro   # Mount law documents read-only
       - ./Model:/app/Model:ro        # Mount local models
       - ./Test-Set:/app/Test-Set:ro  # Mount test cases

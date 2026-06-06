@@ -95,6 +95,10 @@ curl http://localhost:8000/api/health
 
 Responses show a model badge: **Fine-Tuned** (gold) · **Vanilla** (grey) · **HuggingFace** (blue).
 
+> [!TIP]
+> **Production Hyperparameters for Chatbot**:
+> Both the Vanilla and Fine-Tuned local models run via Ollama's native `/api/generate` endpoint, aligning perfectly with their instruction-response training templates. The chatbot uses a calibrated `repeat_penalty` of `1.10` and `repeat_last_n` of `128` (`CHAT_FT_OPTIONS`) to maintain grammatical fluency and eliminate word salad or repetition loops.
+
 ### Evaluation Dashboard (`localhost:3000/evaluation.html`)
 
 1. Select test cases (or "Pilih Semua")
